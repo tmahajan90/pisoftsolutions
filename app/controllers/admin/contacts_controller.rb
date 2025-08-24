@@ -30,6 +30,6 @@ class Admin::ContactsController < AdminController
   end
 
   def contact_params
-    params.require(:contact).permit(:status)
+    params.require(:contact).permit(:contact_status)
   end
 end

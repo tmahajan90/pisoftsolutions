@@ -5,8 +5,8 @@ class Contact < ApplicationRecord
   validates :email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :message, presence: true, length: { minimum: 10, maximum: 2000 }
   
-  # Enums for status
-  enum status: {
+  # Enums for contact_status
+  enum contact_status: {
     new: 'new',
     in_progress: 'in_progress',
     responded: 'responded',
@@ -15,8 +15,8 @@ class Contact < ApplicationRecord
   
   # Scopes
   scope :recent, -> { order(created_at: :desc) }
-  scope :unread, -> { where(status: 'new') }
-  scope :pending, -> { where(status: ['new', 'in_progress']) }
+  scope :unread, -> { where(contact_status: 'new') }
+  scope :pending, -> { where(contact_status: ['new', 'in_progress']) }
   
   # Callbacks
   before_create :set_default_status
@@ -27,20 +27,20 @@ class Contact < ApplicationRecord
   end
   
   def mark_as_responded!
-    update(status: 'responded')
+    update(contact_status: 'responded')
   end
   
   def mark_as_closed!
-    update(status: 'closed')
+    update(contact_status: 'closed')
   end
   
   def mark_as_in_progress!
-    update(status: 'in_progress')
+    update(contact_status: 'in_progress')
   end
   
   private
   
   def set_default_status
-    self.status ||= 'new'
+    self.contact_status ||= 'new'
   end
 end

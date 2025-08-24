@@ -240,7 +240,7 @@
         form.submit();
       },
       "prefill": {
-        "name": "<%= @order.user&.full_name || '' %>",
+        "name": "<%= @order.user&.name || '' %>",
         "email": "<%= @order.user_email %>",
         "contact": "<%= @order.user&.phone || '' %>"
       },
