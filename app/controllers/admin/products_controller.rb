@@ -29,7 +29,6 @@ class Admin::ProductsController < AdminController
 
   def create
     @product = Product.new(product_params)
-    @product.validity_options = parse_validity_options if params[:product][:validity_options].present?
     
     if @product.save
       redirect_to admin_product_path(@product), notice: 'Product created successfully.'
@@ -51,8 +50,6 @@ class Admin::ProductsController < AdminController
 
   def update
     if @product.update(product_params)
-      @product.validity_options = parse_validity_options if params[:product][:validity_options].present?
-      @product.save
       redirect_to admin_product_path(@product), notice: 'Product updated successfully.'
     else
       render :edit, status: :unprocessable_entity
@@ -77,16 +74,8 @@ class Admin::ProductsController < AdminController
   def product_params
     params.require(:product).permit(:name, :description, :price, :original_price, :category, 
                                    :image_url, :color, :badge, :rating, :stock, :validity_type, 
-                                   :validity_duration, :validity_price, :validity_options)
-  end
-  
-  def parse_validity_options
-    return [] if params[:product][:validity_options].blank?
-    
-    begin
-      JSON.parse(params[:product][:validity_options])
-    rescue JSON::ParserError
-      []
-    end
+                                   :validity_duration, :validity_price, :validity_options,
+                                   validity_options_attributes: [:id, :duration_type, :duration_value, 
+                                                               :price, :label, :is_default, :sort_order, :_destroy])
   end
 end

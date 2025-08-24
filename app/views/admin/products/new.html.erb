@@ -111,32 +111,87 @@
         <div class="border-t pt-6">
           <h4 class="text-lg font-medium text-gray-900 mb-4">Validity Options (Optional)</h4>
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <%= form.label :validity_type, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.select :validity_type, 
-                  options_for_select([['None', ''], ['Days', 'days'], ['Months', 'months'], ['Years', 'years']], @product.validity_type), 
-                  {}, 
-                  class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <p class="text-sm text-gray-600">Add multiple validity options for this product</p>
+              <button type="button" onclick="addValidityOption()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm">
+                <i class="fas fa-plus mr-1"></i>Add Option
+              </button>
             </div>
             
-            <div>
-              <%= form.label :validity_duration, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :validity_duration, min: 1, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Duration" %>
+            <div id="validity-options-container" class="space-y-4">
+              <!-- Validity options will be added here dynamically -->
             </div>
             
-            <div>
-              <%= form.label :validity_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :validity_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Validity price" %>
-            </div>
-          </div>
-          
-          <div class="mt-4">
-            <%= form.label :validity_options, class: "block text-sm font-medium text-gray-700 mb-1" %>
-            <%= form.text_area :validity_options, rows: 3, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "JSON format: [{'duration': '30 days', 'price': 999}, {'duration': '90 days', 'price': 2499}]" %>
-            <p class="mt-1 text-sm text-gray-500">Enter validity options in JSON format for multiple options</p>
+            <template id="validity-option-template">
+              <div class="validity-option border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duration Type</label>
+                    <select name="product[validity_options_attributes][INDEX][duration_type]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <option value="days">Days</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                      <option value="lifetime">Lifetime</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Duration Value</label>
+                    <input type="number" name="product[validity_options_attributes][INDEX][duration_value]" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <input type="number" name="product[validity_options_attributes][INDEX][price]" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="999.00">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                    <input type="text" name="product[validity_options_attributes][INDEX][label]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30 Days">
+                  </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between">
+                  <div class="flex items-center">
+                    <input type="checkbox" name="product[validity_options_attributes][INDEX][is_default]" class="mr-2">
+                    <label class="text-sm text-gray-700">Default option</label>
+                  </div>
+                  <button type="button" onclick="removeValidityOption(this)" class="text-red-600 hover:text-red-800 text-sm">
+                    <i class="fas fa-trash mr-1"></i>Remove
+                  </button>
+                </div>
+                <input type="hidden" name="product[validity_options_attributes][INDEX][_destroy]" value="0">
+              </div>
+            </template>
           </div>
         </div>
+        
+        <script>
+          let validityOptionIndex = 0;
+          
+          function addValidityOption() {
+            const container = document.getElementById('validity-options-container');
+            const template = document.getElementById('validity-option-template');
+            const clone = template.content.cloneNode(true);
+            
+            // Replace INDEX with actual index
+            clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
+              input.name = input.name.replace(/INDEX/g, validityOptionIndex);
+            });
+            
+            container.appendChild(clone);
+            validityOptionIndex++;
+          }
+          
+          function removeValidityOption(button) {
+            const optionDiv = button.closest('.validity-option');
+            const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
+            destroyInput.value = '1';
+            optionDiv.style.display = 'none';
+          }
+          
+          // Add one default option on page load
+          document.addEventListener('DOMContentLoaded', function() {
+            addValidityOption();
+          });
+        </script>
         
         <!-- Form Actions -->
         <div class="border-t pt-6 flex justify-end space-x-3">

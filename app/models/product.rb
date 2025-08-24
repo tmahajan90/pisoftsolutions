@@ -1,6 +1,7 @@
 class Product < ApplicationRecord
   has_many :cart_items, dependent: :destroy
   has_many :order_items, dependent: :destroy
+  has_many :validity_options, dependent: :destroy
   
   validates :name, presence: true
   validates :price, presence: true, numericality: { greater_than: 0 }
@@ -12,7 +13,10 @@ class Product < ApplicationRecord
   # Validity types
   VALIDITY_TYPES = ['days', 'months', 'years'].freeze
   
-  # Serialize validity options
+  # Accept nested attributes for validity options
+  accepts_nested_attributes_for :validity_options, allow_destroy: true, reject_if: :all_blank
+  
+  # Serialize validity options (for backward compatibility during migration)
   serialize :validity_options, coder: JSON
   
   def discount_percentage
@@ -38,18 +42,13 @@ class Product < ApplicationRecord
     validity_type.present? && validity_duration.present?
   end
   
-  def default_validity_options
-    [
-      { duration: 30, type: 'days', price: (price * 0.3).round, label: '30 Days' },
-      { duration: 90, type: 'days', price: (price * 0.6).round, label: '3 Months' },
-      { duration: 180, type: 'days', price: (price * 0.8).round, label: '6 Months' },
-      { duration: 365, type: 'days', price: price, label: '1 Year' },
-      { duration: 0, type: 'lifetime', price: (price * 1.5).round, label: 'Lifetime' }
-    ]
-  end
+
   
   def get_validity_options
-    return default_validity_options if validity_options.blank?
-    validity_options
+    validity_options.ordered
+  end
+  
+  def default_validity_option
+    validity_options.default.first || validity_options.ordered.first
   end
 end
