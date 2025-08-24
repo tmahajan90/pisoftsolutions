@@ -1,0 +1,166 @@
+<% content_for :title, 'Orders' %>
+<% content_for :subtitle, 'Manage customer orders' %>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+          <i class="fas fa-rupee-sign text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900">₹<%= number_with_precision(@total_revenue, precision: 0) %></h3>
+          <p class="text-gray-600">Total Revenue</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+          <i class="fas fa-clock text-yellow-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900"><%= @pending_orders %></h3>
+          <p class="text-gray-600">Pending Orders</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow p-6">
+      <div class="flex items-center">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+          <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-2xl font-bold text-gray-900"><%= @orders.total_count %></h3>
+          <p class="text-gray-600">Total Orders</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-white rounded-lg shadow mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Search & Filters</h3>
+    </div>
+    <div class="p-6">
+      <%= form_with url: admin_orders_path, method: :get, local: true, class: "grid grid-cols-1 md:grid-cols-3 gap-4" do |form| %>
+        <div>
+          <%= form.label :search, "Search", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= form.text_field :search, value: params[:search], placeholder: "Order ID, customer name or email...", class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+        </div>
+        <div>
+          <%= form.label :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1" %>
+          <%= form.select :status, options_for_select([['All', ''], ['Pending', 'pending'], ['Paid', 'paid'], ['Shipped', 'shipped'], ['Delivered', 'delivered'], ['Cancelled', 'cancelled']], params[:status]), {}, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+        </div>
+        <div class="flex items-end">
+          <%= form.submit "Search", class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium" %>
+          <%= link_to "Clear", admin_orders_path, class: "ml-2 bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-semibold text-gray-900">Orders (<%= @orders.total_count %>)</h3>
+      </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% @orders.each do |order| %>
+            <tr class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">#<%= order.id %></div>
+                <div class="text-sm text-gray-500"><%= order.order_items.count %> items</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900"><%= order.user&.display_name || order.user_email %></div>
+                <div class="text-sm text-gray-500"><%= order.user&.email || order.user_email %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-gray-900">₹<%= number_with_precision(order.total_amount, precision: 0) %></div>
+                <% if order.total_discount > 0 %>
+                  <div class="text-xs text-green-600">-₹<%= number_with_precision(order.total_discount, precision: 0) %> discount</div>
+                <% end %>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                  <%= case order.status
+                      when 'pending' then 'bg-yellow-100 text-yellow-800'
+                      when 'paid' then 'bg-blue-100 text-blue-800'
+                      when 'shipped' then 'bg-purple-100 text-purple-800'
+                      when 'delivered' then 'bg-green-100 text-green-800'
+                      when 'cancelled' then 'bg-red-100 text-red-800'
+                      else 'bg-gray-100 text-gray-800'
+                      end %>">
+                  <%= order.status.capitalize %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                  <%= case order.payment_status
+                      when 'success' then 'bg-green-100 text-green-800'
+                      when 'pending' then 'bg-yellow-100 text-yellow-800'
+                      when 'failed' then 'bg-red-100 text-red-800'
+                      else 'bg-gray-100 text-gray-800'
+                      end %>">
+                  <%= order.payment_status&.capitalize || 'Pending' %>
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <%= order.created_at.strftime("%B %d, %Y") %>
+                <div class="text-xs text-gray-400"><%= order.created_at.strftime("%I:%M %p") %></div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex space-x-2">
+                  <%= link_to "View", admin_order_path(order), class: "text-blue-600 hover:text-blue-900" %>
+                  <%= link_to "Edit", edit_admin_order_path(order), class: "text-indigo-600 hover:text-indigo-900" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Pagination -->
+    <% if @orders.total_pages > 1 %>
+      <div class="px-6 py-4 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="text-sm text-gray-700">
+            Showing <%= @orders.offset_value + 1 %> to <%= @orders.offset_value + @orders.length %> of <%= @orders.total_count %> results
+          </div>
+          <div class="flex space-x-2">
+            <% if @orders.prev_page %>
+              <%= link_to "Previous", admin_orders_path(page: @orders.prev_page, search: params[:search], status: params[:status]), 
+                  class: "px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+            <% end %>
+            <% if @orders.next_page %>
+              <%= link_to "Next", admin_orders_path(page: @orders.next_page, search: params[:search], status: params[:status]), 
+                  class: "px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

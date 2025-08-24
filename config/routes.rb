@@ -9,8 +9,14 @@ Rails.application.routes.draw do
   # User routes
   resources :users, only: [:show, :edit, :update]
   
-  # Contact management routes (admin)
-  resources :contact_inquiries, controller: 'contacts', only: [:index, :show, :update, :destroy]
+  # Admin routes
+  namespace :admin do
+    get '/', to: 'dashboard#index', as: :dashboard
+    resources :users
+    resources :orders
+    resources :products
+    resources :contacts, only: [:index, :show, :update, :destroy]
+  end
   
   # Main pages
   root "home#index"

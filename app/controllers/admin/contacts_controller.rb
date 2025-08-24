@@ -1,4 +1,4 @@
-class ContactsController < ApplicationController
+class Admin::ContactsController < AdminController
   before_action :set_contact, only: [:show, :update, :destroy]
 
   def index
@@ -12,7 +12,7 @@ class ContactsController < ApplicationController
 
   def update
     if @contact.update(contact_params)
-      redirect_to @contact, notice: 'Contact status updated successfully.'
+      redirect_to admin_contact_path(@contact), notice: 'Contact status updated successfully.'
     else
       render :show, status: :unprocessable_entity
     end
@@ -20,7 +20,7 @@ class ContactsController < ApplicationController
 
   def destroy
     @contact.destroy
-    redirect_to contact_inquiries_path, notice: 'Contact deleted successfully.'
+    redirect_to admin_contacts_path, notice: 'Contact deleted successfully.'
   end
 
   private

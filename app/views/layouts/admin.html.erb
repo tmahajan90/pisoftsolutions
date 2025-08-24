@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Pisoft Solutions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+  <div class="min-h-screen flex">
+    <!-- Sidebar -->
+    <div class="bg-gray-900 text-white w-64 min-h-screen flex-shrink-0">
+      <div class="p-6">
+        <h1 class="text-2xl font-bold">Admin Panel</h1>
+        <p class="text-gray-400 text-sm">Pisoft Solutions</p>
+      </div>
+      
+      <nav class="mt-8">
+        <div class="px-6 mb-4">
+          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Navigation</p>
+        </div>
+        
+        <%= link_to admin_dashboard_path, class: "flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors #{current_page?(admin_dashboard_path) ? 'bg-gray-800 text-white' : ''}" do %>
+          <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
+          Dashboard
+        <% end %>
+        
+        <%= link_to admin_users_path, class: "flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors #{controller_name == 'users' ? 'bg-gray-800 text-white' : ''}" do %>
+          <i class="fas fa-users w-5 h-5 mr-3"></i>
+          Users
+        <% end %>
+        
+        <%= link_to admin_orders_path, class: "flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors #{controller_name == 'orders' ? 'bg-gray-800 text-white' : ''}" do %>
+          <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
+          Orders
+        <% end %>
+        
+        <%= link_to admin_products_path, class: "flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors #{controller_name == 'products' ? 'bg-gray-800 text-white' : ''}" do %>
+          <i class="fas fa-box w-5 h-5 mr-3"></i>
+          Products
+        <% end %>
+        
+        <%= link_to admin_contacts_path, class: "flex items-center px-6 py-3 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors #{controller_name == 'contacts' ? 'bg-gray-800 text-white' : ''}" do %>
+          <i class="fas fa-envelope w-5 h-5 mr-3"></i>
+          Contacts
+        <% end %>
+      </nav>
+      
+      <div class="absolute bottom-0 w-64 p-6">
+        <div class="border-t border-gray-700 pt-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+              <i class="fas fa-user text-white text-sm"></i>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm font-medium text-white"><%= current_user&.display_name %></p>
+              <p class="text-xs text-gray-400">Administrator</p>
+            </div>
+          </div>
+          <%= link_to root_path, class: "block mt-4 text-sm text-gray-400 hover:text-white transition-colors" do %>
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Site
+          <% end %>
+          <%= link_to logout_path, method: :delete, class: "block mt-2 text-sm text-gray-400 hover:text-white transition-colors" do %>
+            <i class="fas fa-sign-out-alt mr-2"></i>
+            Logout
+          <% end %>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Header -->
+      <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-semibold text-gray-900">
+                <%= content_for?(:title) ? yield(:title) : 'Admin Dashboard' %>
+              </h2>
+              <% if content_for?(:subtitle) %>
+                <p class="text-sm text-gray-600 mt-1"><%= yield(:subtitle) %></p>
+              <% end %>
+            </div>
+            <div class="flex items-center space-x-4">
+              <span class="text-sm text-gray-500">
+                <%= Time.current.strftime("%B %d, %Y") %>
+              </span>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Page Content -->
+      <main class="flex-1 overflow-y-auto bg-gray-100">
+        <div class="py-6">
+          <% if notice %>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+              <div class="bg-green-50 border border-green-200 rounded-md p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800"><%= notice %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+          
+          <% if alert %>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+              <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800"><%= alert %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+          
+          <%= yield %>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
