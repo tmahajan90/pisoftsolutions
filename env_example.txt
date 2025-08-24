@@ -1,0 +1,10 @@
+# Razorpay Configuration
+# Copy this content to a .env file in your Rails root directory
+# Get your keys from: https://dashboard.razorpay.com/settings/api-keys
+
+RAZORPAY_KEY_ID=rzp_test_YOUR_TEST_KEY_ID
+RAZORPAY_KEY_SECRET=YOUR_TEST_KEY_SECRET
+
+# For production, use live keys:
+# RAZORPAY_KEY_ID=rzp_live_YOUR_LIVE_KEY_ID
+# RAZORPAY_KEY_SECRET=YOUR_LIVE_KEY_SECRET

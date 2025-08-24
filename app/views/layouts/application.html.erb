@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>PiSoftSolutions - Innovative Software Development & Digital Solutions</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="PiSoftSolutions delivers cutting-edge software development, digital marketing, and business automation solutions to help your business grow and succeed in the digital age.">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+      .group:hover .group-hover\:block {
+        display: block !important;
+      }
+      .group .group-hover\:block:hover {
+        display: block !important;
+      }
+    </style>
+    
+    <script>
+      function initializeDropdown() {
+        const dropdown = document.getElementById('user-dropdown');
+        const dropdownButton = document.getElementById('user-dropdown-button');
+        const dropdownMenu = document.getElementById('user-dropdown-menu');
+        let hideTimeout;
+        
+        if (dropdown && dropdownButton && dropdownMenu) {
+          // Remove existing event listeners to prevent duplicates
+          dropdown.removeEventListener('mouseenter', dropdown.mouseenterHandler);
+          dropdown.removeEventListener('mouseleave', dropdown.mouseleaveHandler);
+          dropdownButton.removeEventListener('click', dropdownButton.clickHandler);
+          
+          // Show dropdown on mouse enter
+          dropdown.mouseenterHandler = function() {
+            clearTimeout(hideTimeout);
+            dropdownMenu.classList.remove('hidden');
+          };
+          dropdown.addEventListener('mouseenter', dropdown.mouseenterHandler);
+          
+          // Hide dropdown on mouse leave with 1 second delay
+          dropdown.mouseleaveHandler = function() {
+            hideTimeout = setTimeout(function() {
+              dropdownMenu.classList.add('hidden');
+            }, 1000);
+          };
+          dropdown.addEventListener('mouseleave', dropdown.mouseleaveHandler);
+          
+          // Also handle button click for mobile/touch devices
+          dropdownButton.clickHandler = function(e) {
+            e.preventDefault();
+            if (dropdownMenu.classList.contains('hidden')) {
+              dropdownMenu.classList.remove('hidden');
+            } else {
+              dropdownMenu.classList.add('hidden');
+            }
+          };
+          dropdownButton.addEventListener('click', dropdownButton.clickHandler);
+        }
+      }
+      
+      // Initialize on DOM content loaded
+      document.addEventListener('DOMContentLoaded', initializeDropdown);
+      
+      // Initialize on Turbo navigation (for Rails 7)
+      document.addEventListener('turbo:load', initializeDropdown);
+      document.addEventListener('turbo:render', initializeDropdown);
+      
+      // Fallback for older Rails versions
+      document.addEventListener('turbolinks:load', initializeDropdown);
+    </script>
+  </head>
+
+  <body class="font-sans antialiased">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <div class="flex-shrink-0">
+              <h1 class="text-2xl font-bold text-indigo-600">PiSoftSolutions</h1>
+            </div>
+          </div>
+          
+          <!-- Desktop Navigation -->
+          <div class="hidden md:flex items-center space-x-8">
+            <%= link_to "Home", root_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+            <%= link_to "Products", products_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+            <%= link_to "Features", features_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+            <%= link_to "Pricing", pricing_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+            <%= link_to "About", about_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+            <%= link_to "Contact", contact_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+          </div>
+          
+          <!-- CTA Button and Cart -->
+          <div class="hidden md:flex items-center space-x-4">
+            <%= link_to cart_path, id: "header-cart-link", class: "relative text-gray-700 hover:text-indigo-600 transition duration-300" do %>
+              <i class="fas fa-shopping-cart text-xl"></i>
+              <% if defined?(@cart) && @cart.total_items > 0 %>
+                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center"><%= @cart.total_items %></span>
+              <% end %>
+            <% end %>
+            
+            <% if logged_in? %>
+              <div class="relative group" id="user-dropdown">
+                <button class="flex items-center text-gray-700 hover:text-indigo-600 transition duration-300" id="user-dropdown-button">
+                  <i class="fas fa-user mr-2"></i>
+                  <%= current_user.full_name %>
+                  <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                </button>
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden" id="user-dropdown-menu">
+                  <%= link_to "My Orders", orders_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <%= link_to "Profile", user_path(current_user), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <div class="border-t border-gray-100"></div>
+                  <%= link_to "Logout", logout_path, method: :delete, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                </div>
+              </div>
+            <% else %>
+              <%= link_to "Login", login_path, class: "text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium" %>
+              <%= link_to "Get Started", signup_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition duration-300" %>
+            <% end %>
+          </div>
+          
+          <!-- Mobile menu button -->
+          <div class="md:hidden flex items-center">
+            <button type="button" class="mobile-menu-button text-gray-700 hover:text-indigo-600 focus:outline-none focus:text-indigo-600">
+              <i class="fas fa-bars text-xl"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Mobile Navigation -->
+      <div class="mobile-menu hidden md:hidden bg-white border-t">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          <%= link_to "Home", root_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Products", products_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Features", features_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Pricing", pricing_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "About", about_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Contact", contact_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Cart", cart_path, class: "block px-3 py-2 text-gray-700 hover:text-indigo-600 rounded-md text-base font-medium" %>
+          <%= link_to "Get Started", "#", class: "block px-3 py-2 bg-indigo-600 text-white rounded-md text-base font-medium" %>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if notice %>
+      <div class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+          <span class="block sm:inline"><%= notice %></span>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- Main Content -->
+    <main class="pt-16">
+      <%= yield %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- Company Info -->
+          <div class="col-span-1 md:col-span-2">
+            <h3 class="text-2xl font-bold text-indigo-400 mb-4">PiSoftSolutions</h3>
+            <p class="text-gray-300 mb-4">Empowering businesses with innovative software solutions, digital marketing strategies, and cutting-edge technology to drive growth and success in the digital landscape.</p>
+            <div class="flex space-x-4">
+              <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-facebook-f"></i></a>
+              <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-linkedin-in"></i></a>
+              <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="text-gray-400 hover:text-indigo-400"><i class="fab fa-youtube"></i></a>
+            </div>
+          </div>
+          
+          <!-- Quick Links -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+            <ul class="space-y-2">
+              <li><%= link_to "Home", root_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+              <li><%= link_to "Products", products_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+              <li><%= link_to "Features", features_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+              <li><%= link_to "Pricing", pricing_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+              <li><%= link_to "About", about_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+              <li><%= link_to "Contact", contact_path, class: "text-gray-300 hover:text-indigo-400" %></li>
+            </ul>
+          </div>
+          
+          <!-- Contact Info -->
+          <div>
+            <h4 class="text-lg font-semibold mb-4">Contact Info</h4>
+            <div class="space-y-2 text-gray-300">
+              <p><i class="fas fa-phone mr-2"></i> +1 (555) 123-4567</p>
+              <p><i class="fas fa-envelope mr-2"></i> info@pisoftsolutions.com</p>
+              <p><i class="fas fa-clock mr-2"></i> Mon-Fri: 9 AM - 6 PM</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>&copy; 2025 All Rights Reserved By - PISOFTSOLUTIONS INC</p>
+        </div>
+      </div>
+    </footer>
+
+
+  </body>
+</html>

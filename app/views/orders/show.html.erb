@@ -1,0 +1,203 @@
+<!-- Order Confirmation Header -->
+<section class="bg-gradient-to-r from-green-600 to-emerald-600 text-white py-12">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center">
+      <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-6">
+        <i class="fas fa-check text-3xl"></i>
+      </div>
+      <h1 class="text-4xl font-bold mb-4">Order Confirmed!</h1>
+      <p class="text-xl opacity-90">Thank you for your purchase</p>
+    </div>
+  </div>
+</section>
+
+<!-- Order Details -->
+<section class="py-12">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+      <!-- Order Info -->
+      <div class="border-b border-gray-200 pb-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Order Information</h2>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Order ID:</span>
+                <span class="font-semibold">#<%= @order.id %></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Order Date:</span>
+                <span class="font-semibold"><%= @order.created_at.strftime("%B %d, %Y") %></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Status:</span>
+                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+                  <%= @order.status.titleize %>
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Payment Status:</span>
+                <% if @order.payment_successful? %>
+                  <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+                    <i class="fas fa-check mr-1"></i>Paid
+                  </span>
+                <% elsif @order.payment_failed? %>
+                  <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-semibold">
+                    <i class="fas fa-times mr-1"></i>Failed
+                  </span>
+                <% else %>
+                  <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-semibold">
+                    <i class="fas fa-clock mr-1"></i>Pending
+                  </span>
+                <% end %>
+              </div>
+              <% if @order.razorpay_payment_id.present? %>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Payment ID:</span>
+                  <span class="font-semibold text-sm"><%= @order.razorpay_payment_id %></span>
+                </div>
+              <% end %>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Email:</span>
+                <span class="font-semibold"><%= @order.user_email %></span>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
+            <div class="space-y-2">
+              <div class="flex justify-between">
+                <span class="text-gray-600">Total Items:</span>
+                <span class="font-semibold"><%= @order_items.sum(&:quantity) %></span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Subtotal:</span>
+                <span class="font-semibold">₹<%= @order.subtotal %></span>
+              </div>
+              <% if @order.total_discount > 0 %>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Discount:</span>
+                  <span class="font-semibold text-green-600">-₹<%= @order.total_discount %></span>
+                </div>
+              <% end %>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Tax:</span>
+                <span class="font-semibold">₹0.00</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600">Shipping:</span>
+                <span class="font-semibold text-green-600">FREE</span>
+              </div>
+              <div class="border-t border-gray-200 pt-2 mt-2">
+                <div class="flex justify-between">
+                  <span class="text-lg font-bold text-gray-900">Total:</span>
+                  <span class="text-lg font-bold text-indigo-600">₹<%= @order.final_total %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Applied Offers -->
+      <% if @applied_offers.any? %>
+        <div class="mb-8">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Applied Offers</h3>
+          <div class="space-y-3">
+            <% @applied_offers.each do |offer| %>
+              <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div>
+                  <h4 class="font-semibold text-green-800"><%= offer.name %></h4>
+                  <p class="text-sm text-green-600"><%= offer.description %></p>
+                  <p class="text-xs text-green-500">Code: <%= offer.code %></p>
+                </div>
+                <div class="text-right">
+                  <span class="font-bold text-green-800"><%= offer.display_discount %></span>
+                  <p class="text-sm text-green-600">-₹<%= offer.calculate_discount(@order.subtotal) %></p>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      
+      <!-- Order Items -->
+      <div class="mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Order Items</h3>
+        <div class="space-y-4">
+          <% @order_items.each do |order_item| %>
+            <div class="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg">
+              <div class="w-16 h-16 bg-gradient-to-br from-<%= order_item.product.color %>-500 to-<%= order_item.product.color %>-600 rounded-lg flex items-center justify-center">
+                <i class="<%= order_item.product.image_url %> text-2xl text-white"></i>
+              </div>
+              
+              <div class="flex-1">
+                <h4 class="font-semibold text-gray-900"><%= order_item.product.name %></h4>
+                <p class="text-sm text-gray-600"><%= order_item.product.description %></p>
+                <div class="flex items-center mt-1">
+                  <span class="text-sm text-gray-600">Qty: <%= order_item.quantity %></span>
+                  <span class="mx-2">•</span>
+                  <span class="font-bold text-<%= order_item.product.color %>-600">₹<%= order_item.price %></span>
+                  <% if order_item.validity_type.blank? && order_item.product.original_price && order_item.product.original_price > order_item.product.price %>
+                    <span class="text-sm text-gray-500 line-through ml-2">₹<%= order_item.product.original_price %></span>
+                  <% end %>
+                </div>
+                <% if order_item.validity_type.present? %>
+                  <div class="flex items-center mt-1">
+                    <span class="text-xs text-gray-500"><%= order_item.validity_display %></span>
+                  </div>
+                <% end %>
+              </div>
+              
+              <div class="text-right">
+                <span class="font-bold text-gray-900">₹<%= order_item.subtotal %></span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Next Steps -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 class="text-lg font-semibold text-blue-900 mb-4">What's Next?</h3>
+        <div class="space-y-3">
+          <div class="flex items-start">
+            <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+            <div>
+              <h4 class="font-semibold text-blue-900">Order Confirmation Email</h4>
+              <p class="text-sm text-blue-700">We've sent a confirmation email to <%= @order.user_email %></p>
+            </div>
+          </div>
+          
+          <div class="flex items-start">
+            <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+            <div>
+              <h4 class="font-semibold text-blue-900">Product Access</h4>
+              <p class="text-sm text-blue-700">You'll receive access credentials within 24 hours</p>
+            </div>
+          </div>
+          
+          <div class="flex items-start">
+            <div class="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+            <div>
+              <h4 class="font-semibold text-blue-900">Support</h4>
+              <p class="text-sm text-blue-700">Our support team is available 24/7 to help you get started</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="mt-8 flex flex-col sm:flex-row gap-4">
+        <%= link_to products_path, class: "flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-6 rounded-lg font-semibold text-center transition duration-300" do %>
+          <i class="fas fa-shopping-bag mr-2"></i>Continue Shopping
+        <% end %>
+        
+        <%= link_to contact_path, class: "flex-1 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 py-3 px-6 rounded-lg font-semibold text-center transition duration-300" do %>
+          <i class="fas fa-headset mr-2"></i>Contact Support
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
