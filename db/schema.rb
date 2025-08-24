@@ -96,7 +96,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_24_130944) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "razorpay_order_id"
     t.string "razorpay_payment_id"
     t.string "payment_status"

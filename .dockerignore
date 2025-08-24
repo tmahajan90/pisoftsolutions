@@ -1,37 +1,66 @@
-# See https://docs.docker.com/engine/reference/builder/#dockerignore-file for more about ignoring files.
+# Git
+.git
+.gitignore
+.gitattributes
 
-# Ignore git directory.
-/.git/
+# Documentation
+README.md
+*.md
+docs/
 
-# Ignore bundler config.
-/.bundle
+# Environment files
+.env*
+!.env.example
 
-# Ignore all environment files (except templates).
-/.env*
-!/.env*.erb
+# Logs
+log/*
+*.log
 
-# Ignore all default key files.
-/config/master.key
-/config/credentials/*.key
+# Temporary files
+tmp/*
+!tmp/.keep
+!tmp/pids/
+!tmp/pids/.keep
 
-# Ignore all logfiles and tempfiles.
-/log/*
-/tmp/*
-!/log/.keep
-!/tmp/.keep
+# Database
+db/*.sqlite3
+db/*.sqlite3-*
 
-# Ignore pidfiles, but keep the directory.
-/tmp/pids/*
-!/tmp/pids/.keep
+# Node modules (if using Node.js)
+node_modules/
 
-# Ignore storage (uploaded files in development and any SQLite databases).
-/storage/*
-!/storage/.keep
-/tmp/storage/*
-!/tmp/storage/.keep
+# Coverage reports
+coverage/
 
-# Ignore assets.
-/node_modules/
-/app/assets/builds/*
-!/app/assets/builds/.keep
-/public/assets
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker files
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Test files
+test/
+spec/
+
+# Backup files
+*.backup
+*.bak
+
+# Cache
+.cache/
+.bundle/
+vendor/bundle/
