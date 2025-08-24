@@ -34,7 +34,7 @@
           <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
         </div>
         <div>
-          <h3 class="text-2xl font-bold text-gray-900"><%= @orders.total_count %></h3>
+          <h3 class="text-2xl font-bold text-gray-900"><%= @total_orders %></h3>
           <p class="text-gray-600">Total Orders</p>
         </div>
       </div>
@@ -68,7 +68,7 @@
   <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
       <div class="flex items-center justify-between">
-        <h3 class="text-lg font-semibold text-gray-900">Orders (<%= @orders.total_count %>)</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Orders (<%= @orders.count %>)</h3>
       </div>
     </div>
     
@@ -142,25 +142,6 @@
       </table>
     </div>
     
-    <!-- Pagination -->
-    <% if @orders.total_pages > 1 %>
-      <div class="px-6 py-4 border-t border-gray-200">
-        <div class="flex items-center justify-between">
-          <div class="text-sm text-gray-700">
-            Showing <%= @orders.offset_value + 1 %> to <%= @orders.offset_value + @orders.length %> of <%= @orders.total_count %> results
-          </div>
-          <div class="flex space-x-2">
-            <% if @orders.prev_page %>
-              <%= link_to "Previous", admin_orders_path(page: @orders.prev_page, search: params[:search], status: params[:status]), 
-                  class: "px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
-            <% end %>
-            <% if @orders.next_page %>
-              <%= link_to "Next", admin_orders_path(page: @orders.next_page, search: params[:search], status: params[:status]), 
-                  class: "px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
-            <% end %>
-          </div>
-        </div>
-      </div>
-    <% end %>
+
   </div>
 </div>

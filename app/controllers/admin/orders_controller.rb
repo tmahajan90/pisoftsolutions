@@ -2,22 +2,25 @@ class Admin::OrdersController < AdminController
   before_action :set_order, only: [:show, :edit, :update, :destroy]
 
   def index
-    @orders = Order.includes(:user, :order_items, :products)
-                   .order(created_at: :desc)
-                   .page(params[:page])
-                   .per(20)
+    # Base query for filtering
+    base_query = Order.includes(:user, :order_items, :products)
     
     if params[:status].present?
-      @orders = @orders.where(status: params[:status])
+      base_query = base_query.where(status: params[:status])
     end
     
     if params[:search].present?
-      @orders = @orders.joins(:user).where("users.name ILIKE ? OR users.email ILIKE ? OR orders.id::text ILIKE ?", 
+      base_query = base_query.joins(:user).where("users.name ILIKE ? OR users.email ILIKE ? OR orders.id::text ILIKE ?", 
                                           "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
     
-    @total_revenue = @orders.where(status: ['paid', 'shipped', 'delivered']).sum(:total_amount)
-    @pending_orders = @orders.where(status: 'pending').count
+    # Get paginated orders for display
+    @orders = base_query.order(created_at: :desc).limit(20)
+    
+    # Calculate statistics on the full filtered dataset (not limited)
+    @total_revenue = base_query.where(status: ['paid', 'shipped', 'delivered']).sum(:total_amount)
+    @pending_orders = base_query.where(status: 'pending').count
+    @total_orders = base_query.count
   end
 
   def show

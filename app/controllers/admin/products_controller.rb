@@ -2,22 +2,25 @@ class Admin::ProductsController < AdminController
   before_action :set_product, only: [:show, :edit, :update, :destroy]
 
   def index
-    @products = Product.order(created_at: :desc)
-                      .page(params[:page])
-                      .per(20)
+    # Base query for filtering
+    base_query = Product.order(created_at: :desc)
     
     if params[:search].present?
-      @products = @products.where("name ILIKE ? OR description ILIKE ? OR category ILIKE ?", 
-                                 "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
+      base_query = base_query.where("name ILIKE ? OR description ILIKE ? OR category ILIKE ?", 
+                                   "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")
     end
     
     if params[:category].present?
-      @products = @products.where(category: params[:category])
+      base_query = base_query.where(category: params[:category])
     end
     
+    # Get paginated products for display (increased limit for better testing)
+    @products = base_query.limit(50)
+    
+    # Calculate statistics on the full filtered dataset (not limited)
     @categories = Product.distinct.pluck(:category)
-    @total_products = Product.count
-    @low_stock_products = Product.where('stock < ?', 10).count
+    @total_products = base_query.count
+    @low_stock_products = base_query.where('stock < ?', 10).count
   end
 
   def new
@@ -26,6 +29,8 @@ class Admin::ProductsController < AdminController
 
   def create
     @product = Product.new(product_params)
+    @product.validity_options = parse_validity_options if params[:product][:validity_options].present?
+    
     if @product.save
       redirect_to admin_product_path(@product), notice: 'Product created successfully.'
     else
@@ -46,6 +51,8 @@ class Admin::ProductsController < AdminController
 
   def update
     if @product.update(product_params)
+      @product.validity_options = parse_validity_options if params[:product][:validity_options].present?
+      @product.save
       redirect_to admin_product_path(@product), notice: 'Product updated successfully.'
     else
       render :edit, status: :unprocessable_entity
@@ -71,5 +78,15 @@ class Admin::ProductsController < AdminController
     params.require(:product).permit(:name, :description, :price, :original_price, :category, 
                                    :image_url, :color, :badge, :rating, :stock, :validity_type, 
                                    :validity_duration, :validity_price, :validity_options)
+  end
+  
+  def parse_validity_options
+    return [] if params[:product][:validity_options].blank?
+    
+    begin
+      JSON.parse(params[:product][:validity_options])
+    rescue JSON::ParserError
+      []
+    end
   end
 end

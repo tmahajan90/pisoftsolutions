@@ -5,6 +5,8 @@ class OrderItem < ApplicationRecord
   validates :quantity, presence: true, numericality: { greater_than: 0 }
   validates :price, presence: true, numericality: { greater_than: 0 }
   
+  scope :recent, -> { joins(:order).order('orders.created_at DESC') }
+  
   def subtotal
     quantity * price
   end

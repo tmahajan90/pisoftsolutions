@@ -2,7 +2,7 @@ class Admin::ContactsController < AdminController
   before_action :set_contact, only: [:show, :update, :destroy]
 
   def index
-    @contacts = Contact.recent.page(params[:page]).per(20)
+    @contacts = Contact.recent.limit(20)
     @new_contacts_count = Contact.unread.count
     @pending_contacts_count = Contact.pending.count
   end

@@ -1,0 +1,149 @@
+<% content_for :title, 'New Product' %>
+<% content_for :subtitle, 'Add a new product to your catalog' %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+  <!-- Back Button -->
+  <div class="mb-6">
+    <%= link_to admin_products_path, class: "inline-flex items-center text-blue-600 hover:text-blue-900" do %>
+      <i class="fas fa-arrow-left mr-2"></i>Back to Products
+    <% end %>
+  </div>
+
+  <div class="bg-white rounded-lg shadow">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Add New Product</h3>
+    </div>
+    
+    <div class="p-6">
+      <%= form_with model: [:admin, @product], local: true, class: "space-y-6" do |form| %>
+        <% if @product.errors.any? %>
+          <div class="bg-red-50 border border-red-200 rounded-md p-4">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-400"></i>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">
+                  <%= pluralize(@product.errors.count, "error") %> prohibited this product from being saved:
+                </h3>
+                <div class="mt-2 text-sm text-red-700">
+                  <ul class="list-disc pl-5 space-y-1">
+                    <% @product.errors.full_messages.each do |message| %>
+                      <li><%= message %></li>
+                    <% end %>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% end %>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <h4 class="text-lg font-medium text-gray-900">Basic Information</h4>
+            
+            <div>
+              <%= form.label :name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_field :name, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Product name" %>
+            </div>
+            
+            <div>
+              <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_area :description, rows: 4, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Product description" %>
+            </div>
+            
+            <div>
+              <%= form.label :category, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_field :category, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "e.g., Electronics, Clothing" %>
+            </div>
+            
+            <div>
+              <%= form.label :image_url, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.url_field :image_url, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "https://example.com/image.jpg" %>
+            </div>
+          </div>
+          
+          <!-- Pricing & Stock -->
+          <div class="space-y-4">
+            <h4 class="text-lg font-medium text-gray-900">Pricing & Stock</h4>
+            
+            <div>
+              <%= form.label :price, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "0.00" %>
+            </div>
+            
+            <div>
+              <%= form.label :original_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :original_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Original price (optional)" %>
+            </div>
+            
+            <div>
+              <%= form.label :stock, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :stock, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "0" %>
+            </div>
+            
+            <div>
+              <%= form.label :rating, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :rating, step: 0.1, min: 0, max: 5, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "0.0" %>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Additional Details -->
+        <div class="border-t pt-6">
+          <h4 class="text-lg font-medium text-gray-900 mb-4">Additional Details</h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <%= form.label :color, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_field :color, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "e.g., Red, Blue, Black" %>
+            </div>
+            
+            <div>
+              <%= form.label :badge, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_field :badge, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "e.g., New, Sale, Featured" %>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Validity Options -->
+        <div class="border-t pt-6">
+          <h4 class="text-lg font-medium text-gray-900 mb-4">Validity Options (Optional)</h4>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div>
+              <%= form.label :validity_type, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.select :validity_type, 
+                  options_for_select([['None', ''], ['Days', 'days'], ['Months', 'months'], ['Years', 'years']], @product.validity_type), 
+                  {}, 
+                  class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+            </div>
+            
+            <div>
+              <%= form.label :validity_duration, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :validity_duration, min: 1, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Duration" %>
+            </div>
+            
+            <div>
+              <%= form.label :validity_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.number_field :validity_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Validity price" %>
+            </div>
+          </div>
+          
+          <div class="mt-4">
+            <%= form.label :validity_options, class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= form.text_area :validity_options, rows: 3, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "JSON format: [{'duration': '30 days', 'price': 999}, {'duration': '90 days', 'price': 2499}]" %>
+            <p class="mt-1 text-sm text-gray-500">Enter validity options in JSON format for multiple options</p>
+          </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="border-t pt-6 flex justify-end space-x-3">
+          <%= link_to "Cancel", admin_products_path, class: "bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium" %>
+          <%= form.submit "Create Product", class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

@@ -4,8 +4,7 @@ class Admin::UsersController < AdminController
   def index
     @users = User.includes(:orders)
                  .order(created_at: :desc)
-                 .page(params[:page])
-                 .per(20)
+                 .limit(20)
     
     if params[:search].present?
       @users = @users.where("name ILIKE ? OR email ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")

@@ -7,7 +7,7 @@ class Contact < ApplicationRecord
   
   # Enums for contact_status
   enum contact_status: {
-    new: 'new',
+    unread: 'unread',
     in_progress: 'in_progress',
     responded: 'responded',
     closed: 'closed'
@@ -15,8 +15,8 @@ class Contact < ApplicationRecord
   
   # Scopes
   scope :recent, -> { order(created_at: :desc) }
-  scope :unread, -> { where(contact_status: 'new') }
-  scope :pending, -> { where(contact_status: ['new', 'in_progress']) }
+  scope :unread, -> { where(contact_status: 'unread') }
+  scope :pending, -> { where(contact_status: ['unread', 'in_progress']) }
   
   # Callbacks
   before_create :set_default_status
@@ -41,6 +41,6 @@ class Contact < ApplicationRecord
   private
   
   def set_default_status
-    self.contact_status ||= 'new'
+    self.contact_status ||= 'unread'
   end
 end
