@@ -119,7 +119,7 @@
                   <%= link_to "My Orders", orders_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                   <%= link_to "Profile", user_path(current_user), class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                   <div class="border-t border-gray-100"></div>
-                  <%= link_to "Logout", logout_path, method: :delete, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <%= button_to "Logout", logout_path, method: :delete, class: "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 bg-transparent border-none cursor-pointer" %>
                 </div>
               </div>
             <% else %>
