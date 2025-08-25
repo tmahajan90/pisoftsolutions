@@ -27,5 +27,24 @@ class AdminController < ApplicationController
                            .where('created_at >= ?', 6.months.ago)
                            .group("DATE_TRUNC('month', created_at)")
                            .sum(:total_amount)
+    
+    # Calculate current month revenue
+    current_month_start = Date.current.beginning_of_month
+    @current_month_revenue = Order.where(status: ['paid', 'shipped', 'delivered'])
+                                 .where('created_at >= ?', current_month_start)
+                                 .sum(:total_amount)
+    
+    # Calculate revenue growth percentage
+    last_month_start = 1.month.ago.beginning_of_month
+    last_month_end = 1.month.ago.end_of_month
+    last_month_revenue = Order.where(status: ['paid', 'shipped', 'delivered'])
+                             .where(created_at: last_month_start..last_month_end)
+                             .sum(:total_amount)
+    
+    if last_month_revenue > 0
+      @revenue_growth = (((@current_month_revenue - last_month_revenue) / last_month_revenue) * 100).round(1)
+    else
+      @revenue_growth = @current_month_revenue > 0 ? 100.0 : 0.0
+    end
   end
 end

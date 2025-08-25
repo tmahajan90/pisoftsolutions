@@ -19,6 +19,7 @@ class Admin::UsersController < AdminController
     @orders = @user.orders.includes(:order_items, :products).recent
     @total_spent = @user.total_spent
     @order_count = @user.total_orders
+    @paid_order_count = @user.orders.where(status: ['paid', 'shipped', 'delivered']).count
   end
 
   def edit
@@ -39,6 +40,12 @@ class Admin::UsersController < AdminController
       @user.destroy
       redirect_to admin_users_path, notice: 'User deleted successfully.'
     end
+  end
+  
+  def reset_trial
+    product = Product.find(params[:product_id])
+    @user.reset_trial_for(product)
+    redirect_to admin_user_path(@user), notice: "Trial reset for #{product.name} successfully."
   end
 
   private

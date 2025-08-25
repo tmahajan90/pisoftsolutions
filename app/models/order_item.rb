@@ -12,6 +12,10 @@ class OrderItem < ApplicationRecord
     quantity * price
   end
   
+  def unit_price
+    price
+  end
+  
   def validity_display
     return validity_option&.display_duration if validity_option.present?
     return "Lifetime" if validity_type == 'lifetime'

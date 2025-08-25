@@ -12,10 +12,22 @@ Rails.application.routes.draw do
   # Admin routes
   namespace :admin do
     get '/', to: 'dashboard#index', as: :dashboard
-    resources :users
+    resources :users do
+      member do
+        post :reset_trial
+      end
+    end
     resources :orders
-    resources :products
-    resources :contacts, only: [:index, :show, :update, :destroy]
+    resources :products do
+      collection do
+        post :update_trial_prices
+      end
+    end
+                  resources :contacts, only: [:index, :show, :update, :destroy] do
+                collection do
+                  post :bulk_update
+                end
+              end
   end
   
   # Main pages

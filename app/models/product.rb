@@ -2,6 +2,7 @@ class Product < ApplicationRecord
   has_many :cart_items, dependent: :destroy
   has_many :order_items, dependent: :destroy
   has_many :validity_options, dependent: :destroy
+  has_many :trial_usages, dependent: :destroy
   
   validates :name, presence: true
   validates :price, presence: true, numericality: { greater_than: 0 }
@@ -50,5 +51,30 @@ class Product < ApplicationRecord
   
   def default_validity_option
     validity_options.default.first || validity_options.ordered.first
+  end
+  
+  # Trial-related methods
+  def has_trial_option?
+    validity_options.exists?(duration_type: 'days', duration_value: 1)
+  end
+  
+  def trial_option
+    validity_options.find_by(duration_type: 'days', duration_value: 1)
+  end
+  
+  def trial_price
+    trial_option&.price || 0
+  end
+  
+  def trial_usage_count
+    trial_usages.count
+  end
+  
+  def recent_trial_usages(limit = 10)
+    trial_usages.recent.limit(limit)
+  end
+  
+  def users_who_used_trial
+    User.joins(:trial_usages).where(trial_usages: { product_id: id })
   end
 end

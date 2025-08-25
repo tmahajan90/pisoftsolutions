@@ -41,6 +41,9 @@ gem "bcrypt", "~> 3.1.7"
 # Razorpay payment gateway integration
 gem "razorpay", "~> 3.2", require: 'razorpay'
 
+# Pagination
+gem 'kaminari'
+
 # Environment variables
 gem 'dotenv-rails', groups: [:development, :test]
 

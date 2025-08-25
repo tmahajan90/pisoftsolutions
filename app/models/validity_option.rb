@@ -18,4 +18,14 @@ class ValidityOption < ApplicationRecord
   def lifetime?
     duration_type == 'lifetime'
   end
+  
+  def trial?
+    duration_type == 'days' && duration_value == 1
+  end
+  
+  def display_duration
+    return "Lifetime" if duration_type == 'lifetime'
+    return "1 Day Trial" if trial?
+    "#{duration_value} #{duration_type.capitalize}"
+  end
 end

@@ -31,6 +31,18 @@ class Admin::ProductsController < AdminController
     @product = Product.new(product_params)
     
     if @product.save
+      # Create default trial option if no validity options were provided
+      if @product.validity_options.empty?
+        @product.validity_options.create!(
+          duration_type: 'days',
+          duration_value: 1,
+          price: 1,
+          label: '1 Day Trial',
+          is_default: true,
+          sort_order: 0
+        )
+      end
+      
       redirect_to admin_product_path(@product), notice: 'Product created successfully.'
     else
       render :new, status: :unprocessable_entity
@@ -63,6 +75,16 @@ class Admin::ProductsController < AdminController
       @product.destroy
       redirect_to admin_products_path, notice: 'Product deleted successfully.'
     end
+  end
+  
+  def update_trial_prices
+    new_price = params[:trial_price]&.to_f || 1.0
+    
+    # Update all trial options across all products
+    trial_options = ValidityOption.where(duration_type: 'days', duration_value: 1)
+    updated_count = trial_options.update_all(price: new_price)
+    
+    redirect_to admin_products_path, notice: "Updated trial price to ₹#{new_price} for #{updated_count} products."
   end
 
   private

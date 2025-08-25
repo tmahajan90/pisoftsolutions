@@ -113,7 +113,7 @@ function updateQuantity(productId, change) {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': $('[name="csrf-token"]').attr('content')
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
     },
     data: JSON.stringify({
       product_id: productId,
@@ -147,7 +147,7 @@ function removeItem(productId) {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRF-Token': $('[name="csrf-token"]').attr('content')
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
     },
     data: JSON.stringify({
       product_id: productId
@@ -181,7 +181,7 @@ function clearCart() {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': $('[name="csrf-token"]').attr('content')
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
       success: function(data) {
         if (data.success) {

@@ -5,6 +5,7 @@ class User < ApplicationRecord
   
   has_many :orders, dependent: :destroy
   has_many :carts, dependent: :destroy
+  has_many :trial_usages, dependent: :destroy
   
   validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
@@ -46,6 +47,31 @@ class User < ApplicationRecord
   
   def last_order_date
     orders.recent.first&.created_at
+  end
+  
+  # Trial-related methods
+  def has_used_trial_for?(product)
+    TrialUsage.has_used_trial?(self, product)
+  end
+  
+  def can_use_trial_for?(product)
+    !has_used_trial_for?(product)
+  end
+  
+  def mark_trial_as_used(product)
+    TrialUsage.mark_as_used(self, product)
+  end
+  
+  def reset_trial_for(product)
+    TrialUsage.reset_for_user(self, product)
+  end
+  
+  def trial_usage_count
+    trial_usages.count
+  end
+  
+  def recent_trial_usages(limit = 5)
+    trial_usages.recent.limit(limit)
   end
 end
 

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_24_150750) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_25_141821) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -124,6 +124,17 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_24_150750) do
     t.text "validity_options"
   end
 
+  create_table "trial_usages", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "product_id", null: false
+    t.datetime "used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_trial_usages_on_product_id"
+    t.index ["user_id", "product_id"], name: "index_trial_usages_on_user_id_and_product_id", unique: true
+    t.index ["user_id"], name: "index_trial_usages_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email"
     t.string "name"
@@ -160,5 +171,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_24_150750) do
   add_foreign_key "order_offers", "offers"
   add_foreign_key "order_offers", "orders"
   add_foreign_key "orders", "users"
+  add_foreign_key "trial_usages", "products"
+  add_foreign_key "trial_usages", "users"
   add_foreign_key "validity_options", "products"
 end

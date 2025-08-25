@@ -9,6 +9,10 @@ class Admin::OrdersController < AdminController
       base_query = base_query.where(status: params[:status])
     end
     
+    if params[:user_id].present?
+      base_query = base_query.where(user_id: params[:user_id])
+    end
+    
     if params[:search].present?
       base_query = base_query.joins(:user).where("users.name ILIKE ? OR users.email ILIKE ? OR orders.id::text ILIKE ?", 
                                           "%#{params[:search]}%", "%#{params[:search]}%", "%#{params[:search]}%")

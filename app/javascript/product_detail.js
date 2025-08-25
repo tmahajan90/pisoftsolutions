@@ -54,12 +54,16 @@ $(document).ready(function() {
     const planPriceEl = document.getElementById('plan-price');
     const planDescEl = document.getElementById('plan-description');
     const planIconEl = document.getElementById('plan-icon');
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const trialStatusEl = document.getElementById('trial-status');
     
     console.log('Elements found:', {
       planName: !!planNameEl,
       planPrice: !!planPriceEl,
       planDesc: !!planDescEl,
-      planIcon: !!planIconEl
+      planIcon: !!planIconEl,
+      addToCartBtn: !!addToCartBtn,
+      trialStatus: !!trialStatusEl
     });
     
     // Update the content
@@ -76,9 +80,47 @@ $(document).ready(function() {
       if (selectedPlan.type === 'lifetime') {
         planDescEl.textContent = 'Unlimited access forever';
         planIconEl.className = 'fas fa-infinity text-xl text-blue-600';
+      } else if (selectedPlan.trial) {
+        planDescEl.textContent = '1-day trial access';
+        planIconEl.className = 'fas fa-gift text-xl text-green-600';
       } else {
         planDescEl.textContent = 'Full access for ' + selectedPlan.duration + ' ' + selectedPlan.type;
         planIconEl.className = 'fas fa-clock text-xl text-blue-600';
+      }
+      
+      // Handle trial logic
+      if (selectedPlan.trial) {
+        if (selectedPlan.trial_used) {
+          // Trial already used
+          if (addToCartBtn) {
+            addToCartBtn.disabled = true;
+            addToCartBtn.textContent = 'Trial Already Used';
+            addToCartBtn.className = 'flex-1 bg-gray-400 text-white py-3 px-6 rounded-lg font-semibold text-lg cursor-not-allowed';
+          }
+          if (trialStatusEl) {
+            trialStatusEl.classList.remove('hidden');
+          }
+        } else if (selectedPlan.can_use_trial) {
+          // Trial available
+          if (addToCartBtn) {
+            addToCartBtn.disabled = false;
+            addToCartBtn.textContent = 'Start Trial';
+            addToCartBtn.className = 'flex-1 bg-green-600 hover:bg-green-700 text-white py-3 px-6 rounded-lg font-semibold text-lg transition duration-300 flex items-center justify-center';
+          }
+          if (trialStatusEl) {
+            trialStatusEl.classList.remove('hidden');
+          }
+        }
+      } else {
+        // Not a trial option
+        if (addToCartBtn) {
+          addToCartBtn.disabled = false;
+          addToCartBtn.innerHTML = '<i class="fas fa-shopping-cart mr-2"></i>Add to Cart';
+          addToCartBtn.className = 'flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-semibold text-lg transition duration-300 flex items-center justify-center';
+        }
+        if (trialStatusEl) {
+          trialStatusEl.classList.add('hidden');
+        }
       }
       
       console.log('Successfully updated all plan details');
@@ -103,25 +145,39 @@ $(document).ready(function() {
     
     console.log('Selected plan for cart:', selectedPlan);
     
+    // Check if trial is already used
+    if (selectedPlan.trial && selectedPlan.trial_used) {
+      showNotification('You have already used the trial for this product', 'error');
+      return;
+    }
+    
     $.ajax({
       url: '/cart/add_item',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': $('[name="csrf-token"]').attr('content')
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
       },
       data: JSON.stringify({
         product_id: productId,
         quantity: 1,
         validity: selectedPlan.type,
         duration: selectedPlan.duration,
-        price: selectedPlan.price
+        price: selectedPlan.price,
+        is_trial: selectedPlan.trial || false
       }),
       success: function(data) {
         console.log('Add to cart success:', data);
         if (data.success) {
           showNotification(data.message);
           updateCartDisplay(data.cart_count, data.cart_total);
+          
+          // If this was a trial, update the UI to show it's been used
+          if (selectedPlan.trial && data.trial_marked) {
+            selectedPlan.trial_used = true;
+            selectedPlan.can_use_trial = false;
+            updatePlanDetails();
+          }
         } else {
           showNotification(data.message, 'error');
         }

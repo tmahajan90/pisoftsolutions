@@ -107,6 +107,55 @@
           </div>
         </div>
         
+        <!-- Trial Management -->
+        <% if @product.has_trial_option? %>
+          <div class="border-t pt-6">
+            <h4 class="text-lg font-medium text-gray-900 mb-4">Trial Management</h4>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-center mb-3">
+                <i class="fas fa-gift text-blue-600 mr-2"></i>
+                <span class="font-medium text-blue-900">1-Day Trial Settings</span>
+              </div>
+              
+              <% trial_option = @product.trial_option %>
+              <% if trial_option %>
+                <%= form.fields_for :validity_options, trial_option do |trial_form| %>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Trial Price (₹)</label>
+                      <%= trial_form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "1.00" %>
+                      <p class="text-xs text-gray-500 mt-1">Set to ₹1 for nominal charge or ₹0 for free trial</p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Trial Label</label>
+                      <%= trial_form.text_field :label, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "1 Day Trial" %>
+                    </div>
+                  </div>
+                  
+                  <div class="mt-3 flex items-center justify-between">
+                    <div class="text-sm text-gray-600">
+                      <span class="font-medium">Current Trial Usage:</span> <%= @product.trial_usage_count %> users
+                    </div>
+                    <div class="flex items-center">
+                      <%= trial_form.check_box :is_default, class: "mr-2" %>
+                      <label class="text-sm text-gray-700">Show as default option</label>
+                    </div>
+                  </div>
+                  
+                  <%= trial_form.hidden_field :duration_type, value: 'days' %>
+                  <%= trial_form.hidden_field :duration_value, value: 1 %>
+                  <%= trial_form.hidden_field :sort_order, value: 0 %>
+                <% end %>
+              <% else %>
+                <div class="text-sm text-gray-600">
+                  <p>No trial option found. Add a validity option with "Days" duration and value "1" to create a trial.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+        
         <!-- Validity Options -->
         <div class="border-t pt-6">
           <h4 class="text-lg font-medium text-gray-900 mb-4">Validity Options (Optional)</h4>

@@ -55,10 +55,49 @@
 
   <!-- Charts and Recent Activity -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <!-- Revenue Chart -->
+    <!-- Enhanced Revenue Chart -->
     <div class="bg-white rounded-lg shadow p-6">
-      <h3 class="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue</h3>
-      <canvas id="revenueChart" width="400" height="200"></canvas>
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">Monthly Revenue</h3>
+          <p class="text-sm text-gray-500">Revenue trends over the last 6 months</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+          <span class="text-sm text-gray-600">Revenue</span>
+        </div>
+      </div>
+      
+      <!-- Chart Stats -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+              <i class="fas fa-chart-line text-white text-sm"></i>
+            </div>
+            <div>
+              <p class="text-xs text-blue-600 font-medium">Current Month</p>
+              <p class="text-lg font-bold text-blue-900">₹<%= number_with_precision(@current_month_revenue || 0, precision: 0) %></p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+          <div class="flex items-center">
+            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+              <i class="fas fa-percentage text-white text-sm"></i>
+            </div>
+            <div>
+              <p class="text-xs text-green-600 font-medium">Growth</p>
+              <p class="text-lg font-bold text-green-900"><%= @revenue_growth || 0 %>%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="relative">
+        <canvas id="revenueChart" width="400" height="300"></canvas>
+        <div id="chartTooltip" class="absolute bg-gray-900 text-white px-3 py-2 rounded-lg text-sm pointer-events-none opacity-0 transition-opacity duration-200" style="z-index: 1000;"></div>
+      </div>
     </div>
     
     <!-- Recent Activity -->
@@ -197,6 +236,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const ctx = document.getElementById('revenueChart').getContext('2d');
+  const tooltip = document.getElementById('chartTooltip');
   
   const monthlyData = <%= raw @monthly_revenue.to_json %>;
   const labels = Object.keys(monthlyData).map(date => {
@@ -205,27 +245,78 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   const values = Object.values(monthlyData);
   
-  new Chart(ctx, {
+  // Create gradient background
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)');
+  
+  // Create gradient border
+  const borderGradient = ctx.createLinearGradient(0, 0, 400, 0);
+  borderGradient.addColorStop(0, '#3B82F6');
+  borderGradient.addColorStop(0.5, '#8B5CF6');
+  borderGradient.addColorStop(1, '#3B82F6');
+  
+  const chart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: labels,
       datasets: [{
         label: 'Revenue (₹)',
         data: values,
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.1,
-        fill: true
+        borderColor: borderGradient,
+        backgroundColor: gradient,
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#3B82F6',
+        pointBorderColor: '#FFFFFF',
+        pointBorderWidth: 3,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: '#8B5CF6',
+        pointHoverBorderColor: '#FFFFFF',
+        pointHoverBorderWidth: 4
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      },
       scales: {
+        x: {
+          grid: {
+            display: false,
+            drawBorder: false
+          },
+          ticks: {
+            color: '#6B7280',
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            padding: 10
+          }
+        },
         y: {
           beginAtZero: true,
+          grid: {
+            color: 'rgba(107, 114, 128, 0.1)',
+            drawBorder: false
+          },
           ticks: {
+            color: '#6B7280',
+            font: {
+              size: 12,
+              weight: '500'
+            },
+            padding: 10,
             callback: function(value) {
+              if (value >= 1000) {
+                return '₹' + (value / 1000).toFixed(1) + 'K';
+              }
               return '₹' + value.toLocaleString();
             }
           }
@@ -234,9 +325,96 @@ document.addEventListener('DOMContentLoaded', function() {
       plugins: {
         legend: {
           display: false
+        },
+        tooltip: {
+          enabled: false,
+          external: function(context) {
+            const tooltipModel = context.tooltip;
+            if (tooltipModel.opacity === 0) {
+              tooltip.style.opacity = '0';
+              return;
+            }
+            
+            const position = context.chart.canvas.getBoundingClientRect();
+            const bodyFont = Chart.helpers.fontString(12, '500', 'Inter');
+            
+            tooltip.style.opacity = '1';
+            tooltip.style.left = position.left + tooltipModel.caretX + 'px';
+            tooltip.style.top = position.top + tooltipModel.caretY + 'px';
+            
+            if (tooltipModel.body) {
+              const titleLines = tooltipModel.title || [];
+              const bodyLines = tooltipModel.body.map(b => b.lines);
+              
+              let innerHtml = '<div class="font-semibold mb-1">' + titleLines.join('') + '</div>';
+              innerHtml += '<div class="text-blue-200">' + bodyLines.join('') + '</div>';
+              
+              tooltip.innerHTML = innerHtml;
+            }
+          }
+        }
+      },
+      animation: {
+        duration: 2000,
+        easing: 'easeInOutQuart',
+        onProgress: function(animation) {
+          const chart = animation.chart;
+          const ctx = chart.ctx;
+          const dataset = chart.data.datasets[0];
+          const meta = chart.getDatasetMeta(0);
+          
+          if (meta.data.length > 0) {
+            const firstPoint = meta.data[0];
+            const lastPoint = meta.data[meta.data.length - 1];
+            
+            // Animate gradient
+            const progress = animation.currentStep / animation.numSteps;
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, `rgba(59, 130, 246, ${0.3 * progress})`);
+            gradient.addColorStop(1, `rgba(59, 130, 246, ${0.05 * progress})`);
+            
+            dataset.backgroundColor = gradient;
+          }
         }
       }
     }
+  });
+  
+  // Add hover effects
+  ctx.canvas.addEventListener('mousemove', function(e) {
+    const rect = ctx.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const points = chart.getDatasetMeta(0).data;
+    points.forEach((point, index) => {
+      const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
+      if (distance < 20) {
+        ctx.canvas.style.cursor = 'pointer';
+        return;
+      }
+    });
+    ctx.canvas.style.cursor = 'default';
+  });
+  
+  // Add click effects
+  ctx.canvas.addEventListener('click', function(e) {
+    const rect = ctx.canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    const points = chart.getDatasetMeta(0).data;
+    points.forEach((point, index) => {
+      const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
+      if (distance < 20) {
+        // Add pulse animation to the clicked point
+        point._model.radius = 12;
+        setTimeout(() => {
+          point._model.radius = 6;
+          chart.update('none');
+        }, 300);
+      }
+    });
   });
 });
 </script>
