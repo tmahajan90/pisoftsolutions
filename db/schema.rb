@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_25_141821) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_25_152414) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -122,6 +122,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_25_141821) do
     t.integer "validity_duration"
     t.decimal "validity_price"
     t.text "validity_options"
+    t.boolean "active", default: true, null: false
   end
 
   create_table "trial_usages", force: :cascade do |t|
@@ -157,6 +158,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_25_141821) do
     t.integer "sort_order", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "active", default: true, null: false
     t.index ["product_id", "is_default"], name: "index_validity_options_on_product_id_and_is_default"
     t.index ["product_id", "sort_order"], name: "index_validity_options_on_product_id_and_sort_order"
     t.index ["product_id"], name: "index_validity_options_on_product_id"

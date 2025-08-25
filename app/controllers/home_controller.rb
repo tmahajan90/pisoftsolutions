@@ -2,17 +2,17 @@ class HomeController < ApplicationController
   before_action :get_or_create_cart
 
   def index
-    @featured_products = Product.limit(3)
+    @featured_products = Product.active.limit(3)
   end
 
   def products
-    @products = Product.all
-    @categories = Product.distinct.pluck(:category)
+    @products = Product.active
+    @categories = Product.active.distinct.pluck(:category)
   end
 
   def product_detail
-    @product = Product.find(params[:id])
-    @related_products = Product.where(category: @product.category).where.not(id: @product.id).limit(4)
+    @product = Product.active.find(params[:id])
+    @related_products = Product.active.where(category: @product.category).where.not(id: @product.id).limit(4)
   end
 
   def validity_options

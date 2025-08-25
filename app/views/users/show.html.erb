@@ -1,4 +1,188 @@
-<div>
-  <h1 class="font-bold text-4xl">Users#show</h1>
-  <p>Find me in app/views/users/show.html.erb</p>
+<% content_for :title, 'User Profile' %>
+<% content_for :subtitle, @user.display_name %>
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <!-- User Profile Header -->
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8">
+      <div class="flex items-center">
+        <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-6">
+          <i class="fas fa-user text-white text-3xl"></i>
+        </div>
+        <div class="text-white">
+          <h1 class="text-3xl font-bold"><%= @user.display_name %></h1>
+          <p class="text-blue-100 text-lg"><%= @user.email %></p>
+          <p class="text-blue-200">Member since <%= @user.created_at.strftime("%B %Y") %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- User Information -->
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Profile Information</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-500 mb-2">Full Name</label>
+            <p class="text-lg text-gray-900"><%= @user.name %></p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-500 mb-2">Email Address</label>
+            <p class="text-lg text-gray-900"><%= @user.email %></p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-500 mb-2">Phone Number</label>
+            <p class="text-lg text-gray-900"><%= @user.phone || 'Not provided' %></p>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-500 mb-2">Account Type</label>
+            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
+              <%= @user.admin? ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800' %>">
+              <%= @user.role.titleize %>
+            </span>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Statistics</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-blue-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fas fa-shopping-cart text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-blue-600 font-medium">Total Orders</p>
+                  <p class="text-xl font-bold text-blue-900"><%= @user.total_orders %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-green-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fas fa-rupee-sign text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-green-600 font-medium">Total Spent</p>
+                  <p class="text-xl font-bold text-green-900">₹<%= number_with_precision(@user.total_spent, precision: 0) %></p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-purple-50 rounded-lg p-4">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center mr-3">
+                  <i class="fas fa-gift text-white text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-sm text-purple-600 font-medium">Trials Used</p>
+                  <p class="text-xl font-bold text-purple-900"><%= @user.trial_usage_count %></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">Quick Actions</h3>
+            <%= link_to edit_user_path(@user), class: "bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-300" do %>
+              <i class="fas fa-edit mr-2"></i>Edit Profile
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <% if @orders.any? %>
+        <div class="bg-white rounded-lg shadow-lg p-6">
+          <h2 class="text-2xl font-bold text-gray-900 mb-6">Recent Orders</h2>
+          
+          <div class="space-y-4">
+            <% @orders.limit(5).each do |order| %>
+              <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition duration-300">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-semibold text-gray-900">Order #<%= order.id %></h4>
+                    <p class="text-sm text-gray-500"><%= order.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-semibold text-gray-900">₹<%= number_with_precision(order.total_amount, precision: 0) %></p>
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                      <%= case order.status
+                          when 'pending'
+                            'bg-yellow-100 text-yellow-800'
+                          when 'paid'
+                            'bg-green-100 text-green-800'
+                          when 'shipped'
+                            'bg-blue-100 text-blue-800'
+                          when 'delivered'
+                            'bg-purple-100 text-purple-800'
+                          else
+                            'bg-gray-100 text-gray-800'
+                          end %>">
+                      <%= order.status.titleize %>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+
+          <% if @orders.count > 5 %>
+            <div class="mt-6 text-center">
+              <%= link_to "View All Orders", orders_path, class: "text-blue-600 hover:text-blue-800 font-medium" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="lg:col-span-1">
+      <!-- Trial Usage -->
+      <% if @user.trial_usage_count > 0 %>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">Trial Usage</h3>
+          <div class="space-y-3">
+            <% @user.recent_trial_usages(3).each do |trial_usage| %>
+              <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                <div class="text-sm">
+                  <span class="font-medium"><%= trial_usage.product.name %></span>
+                  <div class="text-xs text-gray-500">
+                    Used on <%= trial_usage.used_at.strftime("%B %d, %Y") %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <!-- Account Actions -->
+      <div class="bg-white rounded-lg shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Actions</h3>
+        <div class="space-y-3">
+          <%= link_to orders_path, class: "block w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-center font-medium transition duration-300" do %>
+            <i class="fas fa-shopping-cart mr-2"></i>View All Orders
+          <% end %>
+          
+          <%= link_to root_path, class: "block w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-center font-medium transition duration-300" do %>
+            <i class="fas fa-home mr-2"></i>Back to Home
+          <% end %>
+          
+          <%= button_to logout_path, method: :delete, class: "block w-full bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-center font-medium transition duration-300", form: { class: "w-full" } do %>
+            <i class="fas fa-sign-out-alt mr-2"></i>Logout
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

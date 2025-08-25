@@ -86,6 +86,35 @@ class Admin::ProductsController < AdminController
     
     redirect_to admin_products_path, notice: "Updated trial price to ₹#{new_price} for #{updated_count} products."
   end
+  
+  def toggle_status
+    @product = Product.find(params[:id])
+    @product.update(active: !@product.active)
+    
+    status = @product.active? ? 'activated' : 'deactivated'
+    redirect_to admin_products_path, notice: "Product '#{@product.name}' has been #{status}."
+  end
+  
+  def bulk_toggle_status
+    product_ids = params[:product_ids]
+    new_status = params[:new_status] == 'true'
+    
+    if product_ids.present?
+      Product.where(id: product_ids).update_all(active: new_status)
+      status_text = new_status ? 'activated' : 'deactivated'
+      redirect_to admin_products_path, notice: "#{product_ids.count} products have been #{status_text}."
+    else
+      redirect_to admin_products_path, alert: 'Please select products to update.'
+    end
+  end
+  
+  def toggle_validity_option
+    validity_option = ValidityOption.find(params[:validity_option_id])
+    validity_option.update(active: !validity_option.active)
+    
+    status = validity_option.active? ? 'activated' : 'deactivated'
+    redirect_to admin_product_path(validity_option.product), notice: "Validity option '#{validity_option.label}' has been #{status}."
+  end
 
   private
 
@@ -95,9 +124,9 @@ class Admin::ProductsController < AdminController
 
   def product_params
     params.require(:product).permit(:name, :description, :price, :original_price, :category, 
-                                   :image_url, :color, :badge, :rating, :stock, :validity_type, 
+                                   :image_url, :color, :badge, :rating, :stock, :active, :validity_type, 
                                    :validity_duration, :validity_price, :validity_options,
                                    validity_options_attributes: [:id, :duration_type, :duration_value, 
-                                                               :price, :label, :is_default, :sort_order, :_destroy])
+                                                               :price, :label, :is_default, :sort_order, :active, :_destroy])
   end
 end

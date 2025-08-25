@@ -10,6 +10,8 @@ class Product < ApplicationRecord
   
   scope :in_stock, -> { where('stock > 0') }
   scope :by_category, ->(category) { where(category: category) }
+  scope :active, -> { where(active: true) }
+  scope :inactive, -> { where(active: false) }
   
   # Validity types
   VALIDITY_TYPES = ['days', 'months', 'years'].freeze
@@ -29,6 +31,14 @@ class Product < ApplicationRecord
     stock > 0
   end
   
+  def active?
+    active
+  end
+  
+  def inactive?
+    !active
+  end
+  
   def validity_display
     return "Lifetime" if validity_type.blank? || validity_duration.blank?
     "#{validity_duration} #{validity_type.capitalize}"
@@ -46,7 +56,7 @@ class Product < ApplicationRecord
 
   
   def get_validity_options
-    validity_options.ordered
+    validity_options.active.ordered
   end
   
   def default_validity_option

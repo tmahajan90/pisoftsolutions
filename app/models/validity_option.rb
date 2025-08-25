@@ -9,6 +9,8 @@ class ValidityOption < ApplicationRecord
   
   scope :ordered, -> { order(:sort_order, :duration_value) }
   scope :default, -> { where(is_default: true) }
+  scope :active, -> { where(active: true) }
+  scope :inactive, -> { where(active: false) }
   
   def display_duration
     return "Lifetime" if duration_type == 'lifetime'
@@ -21,6 +23,14 @@ class ValidityOption < ApplicationRecord
   
   def trial?
     duration_type == 'days' && duration_value == 1
+  end
+  
+  def active?
+    active
+  end
+  
+  def inactive?
+    !active
   end
   
   def display_duration

@@ -18,10 +18,8 @@ products_data = [
     badge: 'Popular',
     rating: 4.9,
     stock: 100,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 2499.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 749, label: '30 Days' },
       { duration: 90, type: 'days', price: 1499, label: '3 Months' },
       { duration: 180, type: 'days', price: 1999, label: '6 Months' },
@@ -40,10 +38,8 @@ products_data = [
     badge: 'Best Seller',
     rating: 4.8,
     stock: 150,
-    validity_type: 'months',
-    validity_duration: 6,
-    validity_price: 1499.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 449, label: '30 Days' },
       { duration: 90, type: 'days', price: 899, label: '3 Months' },
       { duration: 180, type: 'days', price: 1499, label: '6 Months' },
@@ -62,10 +58,8 @@ products_data = [
     badge: 'Hot',
     rating: 4.7,
     stock: 200,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 999.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 299, label: '30 Days' },
       { duration: 90, type: 'days', price: 599, label: '3 Months' },
       { duration: 180, type: 'days', price: 799, label: '6 Months' },
@@ -84,10 +78,8 @@ products_data = [
     badge: 'New',
     rating: 4.6,
     stock: 75,
-    validity_type: 'months',
-    validity_duration: 3,
-    validity_price: 2999.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 899, label: '30 Days' },
       { duration: 90, type: 'days', price: 1799, label: '3 Months' },
       { duration: 180, type: 'days', price: 2999, label: '6 Months' },
@@ -106,10 +98,8 @@ products_data = [
     badge: 'Trending',
     rating: 4.5,
     stock: 120,
-    validity_type: 'months',
-    validity_duration: 6,
-    validity_price: 1999.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 599, label: '30 Days' },
       { duration: 90, type: 'days', price: 1199, label: '3 Months' },
       { duration: 180, type: 'days', price: 1999, label: '6 Months' },
@@ -128,10 +118,8 @@ products_data = [
     badge: 'Sale',
     rating: 4.4,
     stock: 300,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 799.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 239, label: '30 Days' },
       { duration: 90, type: 'days', price: 479, label: '3 Months' },
       { duration: 180, type: 'days', price: 639, label: '6 Months' },
@@ -150,10 +138,8 @@ products_data = [
     badge: 'Featured',
     rating: 4.3,
     stock: 180,
-    validity_type: 'months',
-    validity_duration: 6,
-    validity_price: 1299.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 389, label: '30 Days' },
       { duration: 90, type: 'days', price: 779, label: '3 Months' },
       { duration: 180, type: 'days', price: 1299, label: '6 Months' },
@@ -172,10 +158,8 @@ products_data = [
     badge: 'Limited Time',
     rating: 4.2,
     stock: 250,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 899.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 269, label: '30 Days' },
       { duration: 90, type: 'days', price: 539, label: '3 Months' },
       { duration: 180, type: 'days', price: 719, label: '6 Months' },
@@ -194,10 +178,8 @@ products_data = [
     badge: 'Popular',
     rating: 4.1,
     stock: 90,
-    validity_type: 'months',
-    validity_duration: 6,
-    validity_price: 1599.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 479, label: '30 Days' },
       { duration: 90, type: 'days', price: 959, label: '3 Months' },
       { duration: 180, type: 'days', price: 1599, label: '6 Months' },
@@ -216,10 +198,8 @@ products_data = [
     badge: 'New',
     rating: 4.0,
     stock: 60,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 2799.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 839, label: '30 Days' },
       { duration: 90, type: 'days', price: 1679, label: '3 Months' },
       { duration: 180, type: 'days', price: 2239, label: '6 Months' },
@@ -238,10 +218,8 @@ products_data = [
     badge: 'Best Seller',
     rating: 4.8,
     stock: 80,
-    validity_type: 'months',
-    validity_duration: 12,
-    validity_price: 3999.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 1199, label: '30 Days' },
       { duration: 90, type: 'days', price: 2399, label: '3 Months' },
       { duration: 180, type: 'days', price: 3199, label: '6 Months' },
@@ -260,10 +238,8 @@ products_data = [
     badge: 'Sale',
     rating: 4.6,
     stock: 500,
-    validity_type: 'months',
-    validity_duration: 6,
-    validity_price: 599.00,
     validity_options: [
+      { duration: 1, type: 'days', price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 179, label: '30 Days' },
       { duration: 90, type: 'days', price: 359, label: '3 Months' },
       { duration: 180, type: 'days', price: 599, label: '6 Months' },
@@ -274,7 +250,21 @@ products_data = [
 ]
 
 products_data.each do |product_data|
-  Product.create!(product_data)
+  validity_options = product_data.delete(:validity_options)
+  product = Product.create!(product_data)
+  
+  # Create validity options for the product
+  validity_options.each_with_index do |option_data, index|
+    product.validity_options.create!(
+      duration_type: option_data[:type],
+      duration_value: option_data[:duration],
+      price: option_data[:price],
+      label: option_data[:label],
+      is_default: index == 1, # Make 30 days the default, not trial
+      sort_order: index,
+      active: true # All options are active by default
+    )
+  end
 end
 
 puts "Created #{Product.count} products"
