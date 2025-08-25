@@ -86,7 +86,21 @@
         <div class="bg-white rounded-xl p-6 shadow-lg">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">Choose Your Plan</h3>
-                            <div class="text-sm text-gray-500">Starting from ₹<%= @product.get_validity_options.first&.price %></div>
+                            <% 
+                              # Get the appropriate price to display
+                              display_price = if @product.get_validity_options.any?
+                                # Use the default validity option price, or the first one if no default
+                                default_option = @product.default_validity_option || @product.get_validity_options.first
+                                default_option&.price
+                              else
+                                # Use the product's base price if no validity options exist
+                                @product.price
+                              end
+                              
+                              # Ensure we have a reasonable price (not 1.0 unless it's actually intended)
+                              display_price = @product.price if display_price == 1.0 && @product.price != 1.0
+                            %>
+                            <div class="text-sm text-gray-500">Starting from ₹<%= display_price %></div>
           </div>
           
           <!-- Plan Dropdown -->

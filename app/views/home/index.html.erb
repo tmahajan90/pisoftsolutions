@@ -134,7 +134,21 @@
             <!-- Price -->
             <div class="mb-4">
               <div class="flex items-baseline">
-                <span class="text-2xl font-bold text-<%= product.color %>-600">₹<%= product.get_validity_options.first&.price %></span>
+                <% 
+                  # Get the appropriate price to display
+                  display_price = if product.get_validity_options.any?
+                    # Use the default validity option price, or the first one if no default
+                    default_option = product.default_validity_option || product.get_validity_options.first
+                    default_option&.price
+                  else
+                    # Use the product's base price if no validity options exist
+                    product.price
+                  end
+                  
+                  # Ensure we have a reasonable price (not 1.0 unless it's actually intended)
+                  display_price = product.price if display_price == 1.0 && product.price != 1.0
+                %>
+                <span class="text-2xl font-bold text-<%= product.color %>-600">₹<%= display_price %></span>
                 <span class="text-sm text-gray-500 ml-2">Starting from</span>
               </div>
               <% if product.original_price && product.original_price > product.price %>
@@ -148,7 +162,23 @@
             <div class="mb-4">
               <div class="flex items-center text-xs text-gray-600">
                 <i class="fas fa-clock text-blue-500 mr-2"></i>
-                                  <span class="font-semibold">Validity: <%= product.get_validity_options.first&.label %></span>
+                <% 
+                  # Get the appropriate validity option to display
+                  display_validity_option = if product.get_validity_options.any?
+                    # Use the default validity option, or the first one if no default
+                    product.default_validity_option || product.get_validity_options.first
+                  else
+                    nil
+                  end
+                  
+                  # If we have a validity option, show its label, otherwise show a default message
+                  validity_text = if display_validity_option
+                    display_validity_option.label
+                  else
+                    "Lifetime"
+                  end
+                %>
+                <span class="font-semibold">Validity: <%= validity_text %></span>
               </div>
             </div>
              
