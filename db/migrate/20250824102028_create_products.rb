@@ -11,8 +11,12 @@ class CreateProducts < ActiveRecord::Migration[7.1]
       t.string :badge
       t.decimal :rating
       t.integer :stock
+      t.boolean :active, default: true, null: false
 
       t.timestamps
     end
+    
+    add_index :products, :category
+    add_index :products, :active
   end
 end

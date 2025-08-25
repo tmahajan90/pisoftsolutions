@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_25_152414) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_25_141821) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -98,7 +98,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_25_152414) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
     t.string "razorpay_order_id"
     t.string "razorpay_payment_id"
     t.string "payment_status"
@@ -116,13 +116,11 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_25_152414) do
     t.string "badge"
     t.decimal "rating"
     t.integer "stock"
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "validity_type"
-    t.integer "validity_duration"
-    t.decimal "validity_price"
-    t.text "validity_options"
-    t.boolean "active", default: true, null: false
+    t.index ["active"], name: "index_products_on_active"
+    t.index ["category"], name: "index_products_on_category"
   end
 
   create_table "trial_usages", force: :cascade do |t|
@@ -156,9 +154,10 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_25_152414) do
     t.string "label", null: false
     t.boolean "is_default", default: false
     t.integer "sort_order", default: 0
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "active", default: true, null: false
+    t.index ["active"], name: "index_validity_options_on_active"
     t.index ["product_id", "is_default"], name: "index_validity_options_on_product_id_and_is_default"
     t.index ["product_id", "sort_order"], name: "index_validity_options_on_product_id_and_sort_order"
     t.index ["product_id"], name: "index_validity_options_on_product_id"

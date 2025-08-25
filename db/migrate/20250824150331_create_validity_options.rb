@@ -8,11 +8,13 @@ class CreateValidityOptions < ActiveRecord::Migration[7.1]
       t.string :label, null: false
       t.boolean :is_default, default: false
       t.integer :sort_order, default: 0
+      t.boolean :active, default: true, null: false
 
       t.timestamps
     end
     
     add_index :validity_options, [:product_id, :sort_order]
     add_index :validity_options, [:product_id, :is_default]
+    add_index :validity_options, :active
   end
 end
