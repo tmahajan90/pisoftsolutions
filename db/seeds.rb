@@ -331,19 +331,19 @@ end
 puts "Created #{Offer.count} offers"
 
 # Create admin user
-admin_user = User.find_or_create_by!(email: 'admin@shopease.com') do |user|
+admin_user = User.find_or_create_by!(email: 'tarun@pisoftsolutions.in') do |user|
   user.name = 'Admin User'
-  user.email = 'admin@shopease.com'
-  user.password = 'admin123'
-  user.password_confirmation = 'admin123'
-  user.phone = '+91-9876543210'
+  user.email = 'tarun@pisoftsolutions.in'
+  user.password = 'ox4ymoro'
+  user.password_confirmation = 'ox4ymoro'
+  user.phone = '+91-9988915210'
   user.role = 'admin'
 end
 
 # Create demo user
-demo_user = User.find_or_create_by!(email: 'demo@example.com') do |user|
+demo_user = User.find_or_create_by!(email: 'demo@pisoftsolutions.in') do |user|
   user.name = 'Demo User'
-  user.email = 'demo@example.com'
+  user.email = 'demo@pisoftsolutions.in'
   user.password = 'demo123'
   user.password_confirmation = 'demo123'
   user.phone = '+91-9876543211'
