@@ -2,9 +2,9 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
-# Clear existing data
-Product.destroy_all
-User.destroy_all
+# Clear existing data (only if explicitly requested)
+# Product.destroy_all
+# User.destroy_all
 
 # Create products similar to Digi Bulk Marketing shop with INR pricing and multiple validity options
 products_data = [
@@ -250,25 +250,53 @@ products_data = [
   }
 ]
 
+created_products = 0
+existing_products = 0
+
 products_data.each do |product_data|
   validity_options = product_data.delete(:validity_options)
-  product = Product.create!(product_data)
   
-  # Create validity options for the product
+  # Check if product exists
+  existing_product = Product.find_by(name: product_data[:name])
+  
+  if existing_product
+    existing_products += 1
+    product = existing_product
+  else
+    # Create new product
+    product = Product.create!(product_data)
+    created_products += 1
+  end
+  
+  # Create validity options for the product (only if they don't exist)
   validity_options.each_with_index do |option_data, index|
-    product.validity_options.create!(
+    existing_option = product.validity_options.find_by(
       duration_type: option_data[:type],
       duration_value: option_data[:duration],
-      price: option_data[:price],
-      label: option_data[:label],
-      is_default: index == 1, # Make 30 days the default, not trial
-      sort_order: index,
-      active: true # All options are active by default
+      price: option_data[:price]
     )
+    
+    unless existing_option
+      product.validity_options.create!(
+        duration_type: option_data[:type],
+        duration_value: option_data[:duration],
+        price: option_data[:price],
+        label: option_data[:label],
+        is_default: index == 1, # Make 30 days the default, not trial
+        sort_order: index,
+        active: true # All options are active by default
+      )
+    end
   end
 end
 
-puts "Created #{Product.count} products"
+if created_products > 0
+  puts "Created #{created_products} new products"
+end
+if existing_products > 0
+  puts "Found #{existing_products} existing products (no changes made)"
+end
+puts "Total products: #{Product.count}"
 
 # Create sample offers
 offers = [
@@ -322,33 +350,58 @@ offers = [
   }
 ]
 
+created_offers = 0
+existing_offers = 0
+
 offers.each do |offer_attrs|
-  Offer.find_or_create_by!(code: offer_attrs[:code]) do |offer|
-    offer.assign_attributes(offer_attrs)
+  existing_offer = Offer.find_by(code: offer_attrs[:code])
+  
+  if existing_offer
+    existing_offers += 1
+  else
+    Offer.create!(offer_attrs)
+    created_offers += 1
   end
 end
 
-puts "Created #{Offer.count} offers"
+if created_offers > 0
+  puts "Created #{created_offers} new offers"
+end
+if existing_offers > 0
+  puts "Found #{existing_offers} existing offers (no changes made)"
+end
+puts "Total offers: #{Offer.count}"
 
 # Create admin user
-admin_user = User.find_or_create_by!(email: 'tarun@pisoftsolutions.in') do |user|
-  user.name = 'Admin User'
-  user.email = 'tarun@pisoftsolutions.in'
-  user.password = 'ox4ymoro'
-  user.password_confirmation = 'ox4ymoro'
-  user.phone = '+91-9988915210'
-  user.role = 'admin'
+existing_admin = User.find_by(email: 'tarun@pisoftsolutions.in')
+if existing_admin
+  admin_user = existing_admin
+  puts "Found existing admin user: #{admin_user.email}"
+else
+  admin_user = User.create!(
+    name: 'Admin User',
+    email: 'tarun@pisoftsolutions.in',
+    password: 'ox4ymoro',
+    password_confirmation: 'ox4ymoro',
+    phone: '+91-9988915210',
+    role: 'admin'
+  )
+  puts "Created new admin user: #{admin_user.email}"
 end
 
 # Create demo user
-demo_user = User.find_or_create_by!(email: 'demo@pisoftsolutions.in') do |user|
-  user.name = 'Demo User'
-  user.email = 'demo@pisoftsolutions.in'
-  user.password = 'demo123'
-  user.password_confirmation = 'demo123'
-  user.phone = '+91-9876543211'
-  user.role = 'user'
+existing_demo = User.find_by(email: 'demo@pisoftsolutions.in')
+if existing_demo
+  demo_user = existing_demo
+  puts "Found existing demo user: #{demo_user.email}"
+else
+  demo_user = User.create!(
+    name: 'Demo User',
+    email: 'demo@pisoftsolutions.in',
+    password: 'demo123',
+    password_confirmation: 'demo123',
+    phone: '+91-9876543211',
+    role: 'user'
+  )
+  puts "Created new demo user: #{demo_user.email}"
 end
-
-puts "Created admin user: #{admin_user.email}"
-puts "Created demo user: #{demo_user.email}"
