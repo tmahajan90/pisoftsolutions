@@ -102,7 +102,7 @@ setup_dev() {
     
     # Build and start services
     print_status "Building and starting Docker services..."
-    docker compose up -d --build
+    docker compose --env-file .env.development up -d --build
     
     # Wait for database to be ready
     print_status "Waiting for database to be ready..."
@@ -130,19 +130,19 @@ setup_dev() {
     
     # Run migrations
     print_status "Running database migrations..."
-    docker compose exec web rails db:migrate
+    docker compose --env-file .env.development exec web rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker compose exec web rails db:seed
+    docker compose --env-file .env.development exec web rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker compose exec web rails assets:precompile
+    docker compose --env-file .env.development exec web rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker compose exec web rails tmp:clear
+    docker compose --env-file .env.development exec web rails tmp:clear
     
     # Wait for application to be ready
     print_status "Waiting for application to be ready..."
@@ -235,19 +235,19 @@ setup_prod() {
     
     # Run migrations
     print_status "Running database migrations..."
-    docker compose -f docker-compose.prod.yml exec web rails db:migrate
+    docker compose -f docker-compose.prod.yml exec web bin/rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker compose -f docker-compose.prod.yml exec web rails db:seed
+    docker compose -f docker-compose.prod.yml exec web bin/rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker compose -f docker-compose.prod.yml exec web rails assets:precompile
+    docker compose -f docker-compose.prod.yml exec web bin/rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker compose -f docker-compose.prod.yml exec web rails tmp:clear
+    docker compose -f docker-compose.prod.yml exec web bin/rails tmp:clear
     
     # Wait for application to be ready
     print_status "Waiting for application to be ready..."
@@ -570,19 +570,19 @@ EOF
     
     # Run migrations
     print_status "Running database migrations..."
-    docker compose -f docker-compose.domain.yml exec web rails db:migrate
+    docker compose -f docker-compose.domain.yml exec web bin/rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker compose -f docker-compose.domain.yml exec web rails db:seed
+    docker compose -f docker-compose.domain.yml exec web bin/rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker compose -f docker-compose.domain.yml exec web rails assets:precompile
+    docker compose -f docker-compose.domain.yml exec web bin/rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker compose -f docker-compose.domain.yml exec web rails tmp:clear
+    docker compose -f docker-compose.domain.yml exec web bin/rails tmp:clear
     
     print_success "Application deployed successfully!"
     
