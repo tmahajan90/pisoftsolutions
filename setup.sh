@@ -98,11 +98,11 @@ setup_dev() {
     
     # Stop any existing containers
     print_status "Stopping existing containers..."
-    docker-compose down 2>/dev/null || true
+    docker compose down 2>/dev/null || true
     
     # Build and start services
     print_status "Building and starting Docker services..."
-    docker-compose up -d --build
+    docker compose up -d --build
     
     # Wait for database to be ready
     print_status "Waiting for database to be ready..."
@@ -113,7 +113,7 @@ setup_dev() {
     local attempt=1
     
     while [[ $attempt -le $max_attempts ]]; do
-        if docker-compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
+        if docker compose exec -T db pg_isready -U postgres > /dev/null 2>&1; then
             print_success "Database is ready"
             break
         fi
@@ -130,19 +130,19 @@ setup_dev() {
     
     # Run migrations
     print_status "Running database migrations..."
-    docker-compose exec web rails db:migrate
+    docker compose exec web rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker-compose exec web rails db:seed
+    docker compose exec web rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker-compose exec web rails assets:precompile
+    docker compose exec web rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker-compose exec web rails tmp:clear
+    docker compose exec web rails tmp:clear
     
     # Wait for application to be ready
     print_status "Waiting for application to be ready..."
@@ -184,11 +184,11 @@ setup_dev() {
     echo -e "  🔐 Demo Password: ${GREEN}demo123${NC}"
     echo ""
     echo -e "${BLUE}📝 Useful Commands:${NC}"
-    echo -e "  🛑 Stop: ${GREEN}docker-compose down${NC}"
-    echo -e "  📊 Logs: ${GREEN}docker-compose logs -f web${NC}"
-    echo -e "  🖥️ Console: ${GREEN}docker-compose exec web rails console${NC}"
-    echo -e "  🧪 Tests: ${GREEN}docker-compose exec web rails test${NC}"
-    echo -e "  🔄 Restart: ${GREEN}docker-compose restart web${NC}"
+    echo -e "  🛑 Stop: ${GREEN}docker compose down${NC}"
+    echo -e "  📊 Logs: ${GREEN}docker compose logs -f web${NC}"
+    echo -e "  🖥️ Console: ${GREEN}docker compose exec web rails console${NC}"
+    echo -e "  🧪 Tests: ${GREEN}docker compose exec web rails test${NC}"
+    echo -e "  🔄 Restart: ${GREEN}docker compose restart web${NC}"
     echo ""
     echo -e "${YELLOW}💡 Tip: Run this script again to restart the application${NC}"
 }
@@ -203,11 +203,11 @@ setup_prod() {
     
     # Stop any existing containers
     print_status "Stopping existing containers..."
-    docker-compose -f docker-compose.prod.yml down 2>/dev/null || true
+    docker compose -f docker-compose.prod.yml down 2>/dev/null || true
     
     # Build and start services
     print_status "Building and starting production services..."
-    docker-compose -f docker-compose.prod.yml up -d --build
+    docker compose -f docker-compose.prod.yml up -d --build
     
     # Wait for database to be ready
     print_status "Waiting for database to be ready..."
@@ -218,7 +218,7 @@ setup_prod() {
     local attempt=1
     
     while [[ $attempt -le $max_attempts ]]; do
-        if docker-compose -f docker-compose.prod.yml exec -T db pg_isready -U postgres > /dev/null 2>&1; then
+        if docker compose -f docker-compose.prod.yml exec -T db pg_isready -U postgres > /dev/null 2>&1; then
             print_success "Database is ready"
             break
         fi
@@ -235,19 +235,19 @@ setup_prod() {
     
     # Run migrations
     print_status "Running database migrations..."
-    docker-compose -f docker-compose.prod.yml exec web rails db:migrate
+    docker compose -f docker-compose.prod.yml exec web rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker-compose -f docker-compose.prod.yml exec web rails db:seed
+    docker compose -f docker-compose.prod.yml exec web rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker-compose -f docker-compose.prod.yml exec web rails assets:precompile
+    docker compose -f docker-compose.prod.yml exec web rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker-compose -f docker-compose.prod.yml exec web rails tmp:clear
+    docker compose -f docker-compose.prod.yml exec web rails tmp:clear
     
     # Wait for application to be ready
     print_status "Waiting for application to be ready..."
@@ -285,9 +285,9 @@ setup_prod() {
     echo -e "  🔐 Admin Password: ${GREEN}ox4ymoro${NC}"
     echo ""
     echo -e "${BLUE}📝 Useful Commands:${NC}"
-    echo -e "  🛑 Stop: ${GREEN}docker-compose -f docker-compose.prod.yml down${NC}"
-    echo -e "  📊 Logs: ${GREEN}docker-compose -f docker-compose.prod.yml logs -f web${NC}"
-    echo -e "  🔄 Restart: ${GREEN}docker-compose -f docker-compose.prod.yml restart web${NC}"
+    echo -e "  🛑 Stop: ${GREEN}docker compose -f docker-compose.prod.yml down${NC}"
+    echo -e "  📊 Logs: ${GREEN}docker compose -f docker-compose.prod.yml logs -f web${NC}"
+    echo -e "  🔄 Restart: ${GREEN}docker compose -f docker-compose.prod.yml restart web${NC}"
     echo ""
     echo -e "${YELLOW}💡 Tip: Run this script again to restart the application${NC}"
 }
@@ -536,18 +536,18 @@ EOF
     mkdir -p certbot/conf certbot/www
     
     # Stop any existing containers
-    docker-compose -f docker-compose.domain.yml down 2>/dev/null || true
+    docker compose -f docker-compose.domain.yml down 2>/dev/null || true
     
     # Start nginx for certificate generation
     print_status "Starting nginx for certificate generation..."
-    docker-compose -f docker-compose.domain.yml up -d nginx
+    docker compose -f docker-compose.domain.yml up -d nginx
     
     # Wait for nginx to be ready
     sleep 5
     
     # Generate SSL certificate
     print_status "Generating SSL certificate..."
-    docker-compose -f docker-compose.domain.yml run --rm certbot
+    docker compose -f docker-compose.domain.yml run --rm certbot
     
     if [ $? -eq 0 ]; then
         print_success "SSL certificate generated successfully"
@@ -562,7 +562,7 @@ EOF
     
     # Build and start all services
     print_status "Building and starting services..."
-    docker-compose -f docker-compose.domain.yml up -d --build
+    docker compose -f docker-compose.domain.yml up -d --build
     
     # Wait for database to be ready
     print_status "Waiting for database to be ready..."
@@ -570,19 +570,19 @@ EOF
     
     # Run migrations
     print_status "Running database migrations..."
-    docker-compose -f docker-compose.domain.yml exec web rails db:migrate
+    docker compose -f docker-compose.domain.yml exec web rails db:migrate
     
     # Seed database
     print_status "Seeding database..."
-    docker-compose -f docker-compose.domain.yml exec web rails db:seed
+    docker compose -f docker-compose.domain.yml exec web rails db:seed
     
     # Precompile assets
     print_status "Precompiling assets..."
-    docker-compose -f docker-compose.domain.yml exec web rails assets:precompile
+    docker compose -f docker-compose.domain.yml exec web rails assets:precompile
     
     # Clear cache
     print_status "Clearing cache..."
-    docker-compose -f docker-compose.domain.yml exec web rails tmp:clear
+    docker compose -f docker-compose.domain.yml exec web rails tmp:clear
     
     print_success "Application deployed successfully!"
     
@@ -601,10 +601,10 @@ EOF
     echo -e "  🔐 Password: ${GREEN}ox4ymoro${NC}"
     echo ""
     echo -e "${BLUE}📝 Useful Commands:${NC}"
-    echo -e "  🛑 Stop: ${GREEN}docker-compose -f docker-compose.domain.yml down${NC}"
-    echo -e "  📊 Logs: ${GREEN}docker-compose -f docker-compose.domain.yml logs -f web${NC}"
-    echo -e "  🔄 Restart: ${GREEN}docker-compose -f docker-compose.domain.yml restart web${NC}"
-    echo -e "  🔒 Renew SSL: ${GREEN}docker-compose -f docker-compose.domain.yml run --rm certbot renew${NC}"
+    echo -e "  🛑 Stop: ${GREEN}docker compose -f docker-compose.domain.yml down${NC}"
+    echo -e "  📊 Logs: ${GREEN}docker compose -f docker-compose.domain.yml logs -f web${NC}"
+    echo -e "  🔄 Restart: ${GREEN}docker compose -f docker-compose.domain.yml restart web${NC}"
+    echo -e "  🔒 Renew SSL: ${GREEN}docker compose -f docker-compose.domain.yml run --rm certbot renew${NC}"
     echo ""
     print_warning "Don't forget to update SMTP settings in .env.production for email functionality"
 }
