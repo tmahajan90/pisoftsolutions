@@ -321,7 +321,7 @@ RAILS_ENV=production
 # Database Configuration
 POSTGRES_DB=pisoftsolutions_production
 POSTGRES_USER=pisoftsolutions
-POSTGRES_PASSWORD=ox4ymoro
+POSTGRES_PASSWORD=password
 
 # Redis Configuration
 REDIS_URL=redis://redis:6379/0

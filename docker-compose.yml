@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_development}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ox4ymoro}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -38,7 +38,7 @@ services:
       - "3000:3000"
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://postgres:ox4ymoro@db:5432/pisoftsolutions_development
+      DATABASE_URL: postgresql://postgres:password@db:5432/pisoftsolutions_development
       REDIS_URL: redis://redis:6379/0
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_1234567890abcdef}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-abcdef1234567890abcdef1234567890}
@@ -59,7 +59,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       RAILS_ENV: development
-      DATABASE_URL: postgresql://postgres:ox4ymoro@db:5432/pisoftsolutions_development
+      DATABASE_URL: postgresql://postgres:password@db:5432/pisoftsolutions_development
       REDIS_URL: redis://redis:6379/0
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-rzp_test_1234567890abcdef}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-abcdef1234567890abcdef1234567890}
