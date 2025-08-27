@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_PASSWORD: password
       POSTGRES_USER: postgres
-      POSTGRES_DB: pisoftsolutions_development
+      POSTGRES_DB: pisoftsolutions_production
     ports:
       - "5432:5432"
     healthcheck:
@@ -29,7 +29,7 @@ services:
       POSTGRES_PORT: 5432
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: pisoftsolutions_development
+      POSTGRES_DB: pisoftsolutions_production
       RAILS_SERVE_STATIC_FILES: true
     depends_on:
       db:

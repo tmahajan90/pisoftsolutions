@@ -99,7 +99,7 @@ The application uses the following environment variables (configured in docker-c
 - `POSTGRES_PORT`: 5432
 - `POSTGRES_USER`: postgres
 - `POSTGRES_PASSWORD`: password
-- `POSTGRES_DB`: pisoftsolutions_development
+- `POSTGRES_DB`: pisoftsolutions_production
 
 ## Troubleshooting
 
