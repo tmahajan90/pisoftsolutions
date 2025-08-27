@@ -1,5 +1,5 @@
 # Multi-stage build for production
-FROM ruby:3.2.4-alpine AS builder
+FROM ruby:3.2.3-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -30,7 +30,7 @@ COPY . .
 RUN bundle exec rails assets:precompile RAILS_ENV=production
 
 # Production stage
-FROM ruby:3.2.4-alpine
+FROM ruby:3.2.3-alpine
 
 # Install runtime dependencies
 RUN apk add --no-cache \

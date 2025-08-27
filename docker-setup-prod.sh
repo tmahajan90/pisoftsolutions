@@ -43,7 +43,7 @@ if ! grep -q "your_secret_key_base_here" .env.production; then
     echo "🔑 Secret key base already configured"
 else
     echo "🔑 Generating secret key base..."
-    SECRET_KEY_BASE=$(docker run --rm ruby:3.2.4-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")
+    SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")git 
     sed -i.bak "s/your_secret_key_base_here/$SECRET_KEY_BASE/" .env.production
     echo "✅ Secret key base generated and configured"
 fi
