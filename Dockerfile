@@ -24,6 +24,9 @@ RUN bundle install --jobs 4 --retry 3
 # Copy the rest of the application
 COPY . .
 
+# Build Tailwind CSS
+RUN bundle exec rails tailwindcss:build
+
 # Precompile assets (will be skipped in development)
 RUN if [ "$RAILS_ENV" = "production" ]; then bundle exec rails assets:precompile; fi
 
