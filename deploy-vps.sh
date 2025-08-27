@@ -56,13 +56,14 @@ if [ ! -f .env.production ]; then
 fi
 
 # Generate SECRET_KEY_BASE if missing
-SECRET_KEY_BASE_VALUE=$(grep "^SECRET_KEY_BASE=" .env.production | cut -d'=' -f2)
-if [ -z "$SECRET_KEY_BASE_VALUE" ] || [ "$SECRET_KEY_BASE_VALUE" = "your_secret_key_base_here" ]; then
-    echo "🔑 Generating SECRET_KEY_BASE..."
-    SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")
-    sed -i.bak "s/^SECRET_KEY_BASE=.*/SECRET_KEY_BASE=$SECRET_KEY_BASE/" .env.production
-    echo "✅ SECRET_KEY_BASE generated and configured"
-fi
+SECRET_KEY_BASE=4eb6bb9f669513d41747891e981a00ba83a32c6af011c4a871b5a6aa2085711b08e284eb931a0749104fa86d3476fad33d66276333d11b408ab81e497e8c2eb9
+# SECRET_KEY_BASE_VALUE=$(grep "^SECRET_KEY_BASE=" .env.production | cut -d'=' -f2)
+# if [ -z "$SECRET_KEY_BASE_VALUE" ] || [ "$SECRET_KEY_BASE_VALUE" = "your_secret_key_base_here" ]; then
+#     echo "🔑 Generating SECRET_KEY_BASE..."
+#     SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")
+#     sed -i.bak "s/^SECRET_KEY_BASE=.*/SECRET_KEY_BASE=$SECRET_KEY_BASE/" .env.production
+#     echo "✅ SECRET_KEY_BASE generated and configured"
+# fi
 
 # Create necessary directories
 echo "📁 Creating necessary directories..."
