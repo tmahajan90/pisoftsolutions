@@ -1,16 +1,11 @@
 # Git
 .git
 .gitignore
-.gitattributes
 
-# Documentation
-README.md
-*.md
-docs/
-
-# Environment files
-.env*
-!.env.example
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
 
 # Logs
 log/*
@@ -18,19 +13,25 @@ log/*
 
 # Temporary files
 tmp/*
-!tmp/.keep
-!tmp/pids/
-!tmp/pids/.keep
+!tmp/.gitkeep
 
 # Database
 db/*.sqlite3
 db/*.sqlite3-*
 
-# Node modules (if using Node.js)
+# Environment variables
+.env
+.env.*
+
+# Node modules (if any)
 node_modules/
 
 # Coverage reports
 coverage/
+
+# Documentation
+README.md
+*.md
 
 # IDE files
 .vscode/
@@ -47,20 +48,7 @@ coverage/
 ehthumbs.db
 Thumbs.db
 
-# Docker files
-Dockerfile*
-docker-compose*.yml
-.dockerignore
-
-# Test files
-test/
-spec/
-
-# Backup files
-*.backup
-*.bak
-
-# Cache
-.cache/
-.bundle/
-vendor/bundle/
+# Rails specific
+public/assets/
+public/packs/
+public/packs-test/

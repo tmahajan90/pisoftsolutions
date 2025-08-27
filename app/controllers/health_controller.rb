@@ -1,6 +1,6 @@
 class HealthController < ApplicationController
   skip_before_action :verify_authenticity_token
-  skip_before_action :authenticate_user!, if: :devise_controller?
+  # skip_before_action :authenticate_user!, if: :devise_controller?
   
   def index
     health_status = {
