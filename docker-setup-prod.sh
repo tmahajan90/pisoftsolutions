@@ -38,14 +38,15 @@ else
     echo "✅ SSL certificates already exist"
 fi
 
-# Generate secret key base if not set
-if ! grep -q "your_secret_key_base_here" .env.production; then
-    echo "🔑 Secret key base already configured"
-else
+# Generate secret key base if not set or empty
+SECRET_KEY_BASE_VALUE=$(grep "^SECRET_KEY_BASE=" .env.production | cut -d'=' -f2)
+if [ -z "$SECRET_KEY_BASE_VALUE" ] || [ "$SECRET_KEY_BASE_VALUE" = "your_secret_key_base_here" ]; then
     echo "🔑 Generating secret key base..."
-    SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")git 
-    sed -i.bak "s/your_secret_key_base_here/$SECRET_KEY_BASE/" .env.production
+    SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")
+    sed -i.bak "s/^SECRET_KEY_BASE=.*/SECRET_KEY_BASE=$SECRET_KEY_BASE/" .env.production
     echo "✅ Secret key base generated and configured"
+else
+    echo "🔑 Secret key base already configured"
 fi
 
 # Build and start the containers

@@ -26,6 +26,11 @@ This script will:
    # Edit .env.production with your actual values
    ```
 
+2. **Generate SECRET_KEY_BASE (if missing):**
+   ```bash
+   ./generate-secret-key.sh
+   ```
+
 2. **Generate SSL certificates:**
    ```bash
    mkdir -p ssl
