@@ -11,14 +11,14 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
-# Generate SECRET_KEY_BASE if in production and missing
-if [ "$RAILS_ENV" = "production" ]; then
-    if [ -z "$SECRET_KEY_BASE" ]; then
-        echo "🔑 Generating SECRET_KEY_BASE for production..."
-        export SECRET_KEY_BASE=$(docker run --rm ruby:3.2.3-alpine ruby -e "require 'securerandom'; puts SecureRandom.hex(64)")
-        echo "✅ SECRET_KEY_BASE generated"
-    fi
+# Check if .env file exists
+if [ ! -f .env ]; then
+    echo "❌ .env file not found. Please create a .env file with your environment variables."
+    exit 1
 fi
+
+# Load environment variables from .env file
+export $(cat .env | grep -v '^#' | xargs)
 
 # Build and start the containers
 echo "📦 Building and starting containers..."
