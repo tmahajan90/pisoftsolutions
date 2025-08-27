@@ -61,7 +61,7 @@ test:
 production:
   <<: *default
   database: <%= ENV.fetch("POSTGRES_DB") { "pisoftsolutions_production" } %>
-  username: <%= ENV.fetch("POSTGRES_USER") { "pisoftsolutions" } %>
+  username: <%= ENV.fetch("POSTGRES_USER") { "postgres" } %>
   password: <%= ENV.fetch("POSTGRES_PASSWORD") { "password" } %>
   host: <%= ENV.fetch("POSTGRES_HOST") { "localhost" } %>
   port: <%= ENV.fetch("POSTGRES_PORT") { 5432 } %>
