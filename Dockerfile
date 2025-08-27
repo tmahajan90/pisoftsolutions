@@ -9,28 +9,30 @@ RUN apt-get update -qq && apt-get install -y \
     npm \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
-
 # Install yarn
 RUN npm install -g yarn
+
+# Set working directory
+WORKDIR /app
 
 # Copy Gemfile and Gemfile.lock
 COPY Gemfile Gemfile.lock ./
 
 # Install Ruby gems
-RUN bundle install
+RUN bundle install --jobs 4 --retry 3
 
 # Copy the rest of the application
 COPY . .
 
-# Precompile assets
-RUN bundle exec rails assets:precompile
+# Precompile assets (will be skipped in development)
+RUN if [ "$RAILS_ENV" = "production" ]; then bundle exec rails assets:precompile; fi
 
 # Add a script to be executed every time the container starts
 COPY entrypoint.sh /usr/bin/
 RUN chmod +x /usr/bin/entrypoint.sh
-ENTRYPOINT ["entrypoint.sh"]
+
+# Expose port
+EXPOSE 3000
 
 # Start the main process
 CMD ["rails", "server", "-b", "0.0.0.0"]
