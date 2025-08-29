@@ -140,7 +140,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Selected Color</label>
                   <div class="flex items-center min-h-10 p-2 border border-gray-200 rounded-lg" id="selected-color-preview">
                     <% if @product.color.present? %>
-                      <% color_data = Product.available_colors[@product.color.to_sym] %>
+                      <% color_data = @product.safe_current_color_info %>
                       <span class="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-<%= color_data[:css_class] %>-100 text-<%= color_data[:css_class] %>-800 border border-<%= color_data[:css_class] %>-200">
                         <span class="w-4 h-4 rounded-full mr-2 bg-<%= color_data[:css_class] %>-500"></span>
                         <%= color_data[:name] %>
