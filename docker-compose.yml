@@ -36,7 +36,8 @@ services:
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
-      FORCE_SSL: false
+      FORCE_SSL: ${FORCE_SSL:-false}
+      RAILS_MASTER_KEY: b67ed970dbf3ce91a0ab0b94ae4cc82a
     depends_on:
       db:
         condition: service_healthy

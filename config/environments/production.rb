@@ -39,7 +39,11 @@ Rails.application.configure do
   # config.action_cable.allowed_request_origins = [ "http://example.com", /http:\/\/example.*/ ]
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = !!ENV['FORCE_SSL']
+  # Only force SSL if FORCE_SSL is explicitly set to 'true'
+  config.force_ssl = ENV['FORCE_SSL'] == 'true'
+  
+  # Debug SSL configuration
+  Rails.logger.info "SSL Configuration: FORCE_SSL=#{ENV['FORCE_SSL']}, config.force_ssl=#{config.force_ssl}"
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -99,7 +103,9 @@ Rails.application.configure do
   
   # Action Mailer configuration for domain
   if ENV['DOMAIN'].present?
-    config.action_mailer.default_url_options = { host: ENV['DOMAIN'], protocol: 'https' }
+    # Use HTTP protocol if FORCE_SSL is not enabled
+    protocol = ENV['FORCE_SSL'] == 'true' ? 'https' : 'http'
+    config.action_mailer.default_url_options = { host: ENV['DOMAIN'], protocol: protocol }
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = {
       address: ENV['SMTP_ADDRESS'] || 'smtp.gmail.com',
