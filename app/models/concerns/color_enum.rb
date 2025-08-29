@@ -8,23 +8,8 @@ module ColorEnum
       blue: { name: 'Blue', css_class: 'blue' },
       green: { name: 'Green', css_class: 'green' },
       orange: { name: 'Orange', css_class: 'orange' },
-      purple: { name: 'Purple', css_class: 'purple' },
-      # pink: { name: 'Pink', css_class: 'pink' },
       gray: { name: 'Gray', css_class: 'gray' },
-      # teal: { name: 'Teal', css_class: 'teal' },
-      # cyan: { name: 'Cyan', css_class: 'cyan' },
-      indigo: { name: 'Indigo', css_class: 'indigo' },
-      emerald: { name: 'Emerald', css_class: 'emerald' },
-      rose: { name: 'Rose', css_class: 'rose' },
-      amber: { name: 'Amber', css_class: 'amber' },
-      # lime: { name: 'Lime', css_class: 'lime' },
-      sky: { name: 'Sky', css_class: 'sky' },
-      violet: { name: 'Violet', css_class: 'violet' },
-      fuchsia: { name: 'Fuchsia', css_class: 'fuchsia' },
-      slate: { name: 'Slate', css_class: 'slate' },
-      zinc: { name: 'Zinc', css_class: 'zinc' },
-      neutral: { name: 'Neutral', css_class: 'neutral' },
-      stone: { name: 'Stone', css_class: 'stone' }
+      indigo: { name: 'Indigo', css_class: 'indigo' }
     }.freeze
 
     # Class methods
