@@ -1,4 +1,6 @@
 class Product < ApplicationRecord
+  include ColorEnum
+  
   has_many :cart_items, dependent: :destroy
   has_many :order_items, dependent: :destroy
   has_many :validity_options, dependent: :destroy
@@ -31,35 +33,48 @@ class Product < ApplicationRecord
   # Serialize features as JSON array
   serialize :features, coder: JSON, default: []
   
+  # Color is stored as single string, no serialization needed
+  
   # Ensure features is always an array
   before_save :ensure_features_array
+  
+  # Ensure colors is always an array
+  before_save :ensure_colors_array
   
   # Ensure at least one validity option exists
   after_save :ensure_default_validity_option
   
   # Override features= to ensure proper array handling
   def features=(value)
-    Rails.logger.debug "Product#features= called with: #{value.inspect} (class: #{value.class})"
-    
     if value.is_a?(Array)
       # Filter out empty strings and ensure unique values
       cleaned_features = value.reject(&:blank?).uniq
-      Rails.logger.debug "Setting features to cleaned array: #{cleaned_features.inspect}"
       super(cleaned_features)
     elsif value.is_a?(String)
       # Handle case where value might be a JSON string
       begin
         parsed = JSON.parse(value)
         final_value = parsed.is_a?(Array) ? parsed : [value]
-        Rails.logger.debug "Parsed JSON string, setting features to: #{final_value.inspect}"
         super(final_value)
       rescue JSON::ParserError
-        Rails.logger.debug "JSON parse failed, setting features to: [#{value}]"
         super([value])
       end
     else
-      Rails.logger.debug "Setting features to: #{value.inspect}"
       super(value)
+    end
+  end
+  
+  # Override color= to ensure proper string handling
+  def color=(value)
+    if value.is_a?(Array)
+      # Take the first non-blank color from the array
+      first_color = value.reject(&:blank?).first
+      super(first_color || 'blue')
+    elsif value.is_a?(String)
+      # Use the string value directly
+      super(value.presence || 'blue')
+    else
+      super(value.to_s.presence || 'blue')
     end
   end
   
@@ -151,6 +166,16 @@ class Product < ApplicationRecord
     self.features.is_a?(Array) ? self.features : []
   end
   
+  def colors_list
+    return [] if self.color.blank?
+    # color is now a single string, return as array for compatibility
+    [self.color]
+  end
+  
+  def primary_color
+    colors_list.first
+  end
+  
   private
   
   def ensure_features_array
@@ -165,6 +190,21 @@ class Product < ApplicationRecord
       self.features = [self.features].compact
     else
       Rails.logger.debug "Features is already an array: #{self.features.inspect}"
+    end
+  end
+  
+  def ensure_colors_array
+    # Ensure color is always a valid string
+    Rails.logger.debug "ensure_colors_array called, current color: #{self.color.inspect} (class: #{self.color.class})"
+    
+    if self.color.nil? || self.color.blank?
+      Rails.logger.debug "Color is nil or blank, setting to default"
+      self.color = 'blue'
+    elsif !self.color.is_a?(String)
+      Rails.logger.debug "Color is not a string, converting to string"
+      self.color = self.color.to_s
+    else
+      Rails.logger.debug "Color is already a string: #{self.color.inspect}"
     end
   end
   

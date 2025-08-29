@@ -31,12 +31,6 @@ class Admin::ProductsController < AdminController
     # Process features parameter to handle array properly
     processed_params = product_params
     
-    # Debug logging for features
-    Rails.logger.debug "Raw features param: #{params[:product][:features].inspect}"
-    Rails.logger.debug "Processed features param: #{processed_params[:features].inspect}"
-    Rails.logger.debug "Debug features param: #{params[:debug_features].inspect}"
-    Rails.logger.debug "All params: #{params.inspect}"
-    
     if processed_params[:features].present?
       # Filter out empty strings and ensure it's an array
       features_array = processed_params[:features].is_a?(Array) ? processed_params[:features] : [processed_params[:features]]
@@ -45,6 +39,17 @@ class Admin::ProductsController < AdminController
     else
       processed_params[:features] = []
       Rails.logger.debug "No features found, setting to empty array"
+    end
+    
+    # Process color parameter to handle single string
+    if processed_params[:color].present?
+      # Ensure it's a single string value
+      color_value = processed_params[:color].is_a?(Array) ? processed_params[:color].first : processed_params[:color]
+      processed_params[:color] = color_value.presence || 'blue'
+      Rails.logger.debug "Final color value: #{processed_params[:color].inspect}"
+    else
+      processed_params[:color] = 'blue'
+      Rails.logger.debug "No color found, setting to default blue"
     end
     
     @product = Product.new(processed_params)
@@ -86,12 +91,6 @@ class Admin::ProductsController < AdminController
     # Process features parameter to handle array properly
     processed_params = product_params
     
-    # Debug logging for features
-    Rails.logger.debug "Raw features param: #{params[:product][:features].inspect}"
-    Rails.logger.debug "Processed features param: #{processed_params[:features].inspect}"
-    Rails.logger.debug "Debug features param: #{params[:debug_features].inspect}"
-    Rails.logger.debug "All params: #{params.inspect}"
-    
     if processed_params[:features].present?
       # Filter out empty strings and ensure it's an array
       features_array = processed_params[:features].is_a?(Array) ? processed_params[:features] : [processed_params[:features]]
@@ -100,6 +99,17 @@ class Admin::ProductsController < AdminController
     else
       processed_params[:features] = []
       Rails.logger.debug "No features found, setting to empty array"
+    end
+    
+    # Process color parameter to handle single string
+    if processed_params[:color].present?
+      # Ensure it's a single string value
+      color_value = processed_params[:color].is_a?(Array) ? processed_params[:color].first : processed_params[:color]
+      processed_params[:color] = color_value.presence || 'blue'
+      Rails.logger.debug "Final color value: #{processed_params[:color].inspect}"
+    else
+      processed_params[:color] = 'blue'
+      Rails.logger.debug "No color found, setting to default blue"
     end
     
     if @product.update(processed_params)
@@ -165,8 +175,8 @@ class Admin::ProductsController < AdminController
 
   def product_params
     params.require(:product).permit(:name, :description, :price, :original_price, :category, 
-                                   :image_url, :color, :badge, :rating, :stock, :active, :validity_type, 
-                                   :validity_duration, :validity_price, :validity_options, features: [],
+                                   :image_url, :badge, :rating, :stock, :active, :validity_type, 
+                                   :validity_duration, :validity_price, :validity_options, :color, features: [],
                                    validity_options_attributes: [:id, :duration_type, :duration_value, 
                                                                :price, :label, :is_default, :sort_order, :active, :_destroy])
   end
