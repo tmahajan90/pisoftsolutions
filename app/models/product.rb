@@ -19,8 +19,25 @@ class Product < ApplicationRecord
   # Accept nested attributes for validity options
   accepts_nested_attributes_for :validity_options, allow_destroy: true, reject_if: :all_blank
   
+  # Callback to ensure only one default validity option
+  after_save :ensure_single_default_validity_option
+  
   # Serialize validity options (for backward compatibility during migration)
   serialize :validity_options, coder: JSON
+  
+  # Serialize features as JSON array
+  serialize :features, coder: JSON, default: []
+  
+  # Override features= to ensure proper array handling
+  def features=(value)
+    if value.is_a?(Array)
+      # Filter out empty strings and ensure unique values
+      cleaned_features = value.reject(&:blank?).uniq
+      super(cleaned_features)
+    else
+      super(value)
+    end
+  end
   
   def discount_percentage
     return 0 if original_price.nil? || original_price <= price
@@ -56,11 +73,11 @@ class Product < ApplicationRecord
 
   
   def get_validity_options
-    validity_options.active.ordered
+    validity_options.active.sorted_by_duration
   end
   
   def default_validity_option
-    validity_options.default.first || validity_options.ordered.first
+    validity_options.default.first || validity_options.sorted_by_duration.first
   end
   
   # Trial-related methods
@@ -86,5 +103,37 @@ class Product < ApplicationRecord
   
   def users_who_used_trial
     User.joins(:trial_usages).where(trial_usages: { product_id: id })
+  end
+  
+  # Feature management methods
+  def add_feature(feature)
+    self.features ||= []
+    self.features << feature unless self.features.include?(feature)
+  end
+  
+  def remove_feature(feature)
+    self.features ||= []
+    self.features.delete(feature)
+  end
+  
+  def has_feature?(feature)
+    self.features&.include?(feature) || false
+  end
+  
+  def features_list
+    self.features || []
+  end
+  
+  private
+  
+  def ensure_single_default_validity_option
+    # Get all default validity options for this product
+    default_options = validity_options.where(is_default: true)
+    
+    # If more than one default option exists, keep only the first one
+    if default_options.count > 1
+      first_default = default_options.first
+      validity_options.where(is_default: true).where.not(id: first_default.id).update_all(is_default: false)
+    end
   end
 end

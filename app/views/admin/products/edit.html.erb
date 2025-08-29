@@ -116,6 +116,92 @@
           </div>
         </div>
         
+        <!-- Product Features -->
+        <div class="border-t pt-6">
+          <h4 class="text-lg font-medium text-gray-900 mb-4">Product Features</h4>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center">
+              <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+              <span class="text-sm text-blue-800 font-medium">Features Management:</span>
+            </div>
+            <p class="text-sm text-blue-700 mt-1">Add or remove features for this product. Features will be displayed to customers on the product page.</p>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Available Features -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Available Features</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <% available_features = [
+                  'Easy Setup & Integration',
+                  '24/7 Technical Support',
+                  '99.9% Uptime Guarantee',
+                  'Regular Updates',
+                  'Analytics & Reporting',
+                  'Mobile Responsive',
+                  'API Access',
+                  'Custom Branding',
+                  'Multi-language Support',
+                  'Advanced Security',
+                  'Cloud Storage',
+                  'Real-time Sync',
+                  'Team Collaboration',
+                  'Data Backup',
+                  'Performance Monitoring'
+                ] %>
+                
+                <% available_features.each do |feature| %>
+                  <div class="flex items-center">
+                    <%= check_box_tag "product[features][]", feature, @product.has_feature?(feature), 
+                        id: "feature_#{feature.parameterize}", 
+                        class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+                    <label for="feature_<%= feature.parameterize %>" class="ml-2 text-sm text-gray-700">
+                      <%= feature %>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Custom Features -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Custom Features</label>
+              
+              <!-- Debug info (remove in production) -->
+              <% if Rails.env.development? %>
+                <div class="bg-yellow-50 border border-yellow-200 rounded p-2 mb-2 text-xs">
+                  <strong>Debug Info:</strong><br>
+                  All features: <%= @product.features_list.inspect %><br>
+                  Available features: <%= available_features.inspect %><br>
+                  Custom features: <%= @product.features_list.select { |f| !available_features.include?(f) }.inspect %>
+                </div>
+              <% end %>
+              
+              <div class="space-y-2" id="custom-features-container">
+                <% custom_features = @product.features_list.select { |f| !available_features.include?(f) } %>
+                <% if custom_features.any? %>
+                  <% custom_features.each do |feature| %>
+                    <div class="flex items-center space-x-2 custom-feature-item">
+                      <input type="text" name="product[features][]" value="<%= feature %>" 
+                             class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                             placeholder="Enter custom feature">
+                      <button type="button" onclick="removeCustomFeature(this)" class="text-red-600 hover:text-red-800">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <div class="text-sm text-gray-500 italic">No custom features added yet. Click "Add Custom Feature" to add one.</div>
+                <% end %>
+              </div>
+              <button type="button" onclick="addCustomFeature()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                <i class="fas fa-plus mr-1"></i>Add Custom Feature
+              </button>
+            </div>
+          </div>
+        </div>
+        
         <!-- Trial Management -->
         <% if @product.has_trial_option? %>
           <div class="border-t pt-6">
@@ -147,7 +233,7 @@
                       <span class="font-medium">Current Trial Usage:</span> <%= @product.trial_usage_count %> users
                     </div>
                     <div class="flex items-center">
-                      <%= trial_form.check_box :is_default, class: "mr-2" %>
+                      <%= trial_form.check_box :is_default, class: "mr-2 trial-default-checkbox" %>
                       <label class="text-sm text-gray-700">Show as default option</label>
                     </div>
                   </div>
@@ -169,6 +255,14 @@
         <div class="border-t pt-6">
           <h4 class="text-lg font-medium text-gray-900 mb-4">Validity Options (Optional)</h4>
           
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center">
+              <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+              <span class="text-sm text-blue-800 font-medium">Important:</span>
+            </div>
+            <p class="text-sm text-blue-700 mt-1">Only one validity option can be set as default per product. Selecting a new default will automatically uncheck the previous default option.</p>
+          </div>
+          
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <p class="text-sm text-gray-600">Manage validity options for this product</p>
@@ -178,7 +272,7 @@
             </div>
             
             <div id="validity-options-container" class="space-y-4">
-              <% @product.validity_options.each_with_index do |option, index| %>
+              <% @product.validity_options.sorted_by_duration.each_with_index do |option, index| %>
                 <div class="validity-option border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <%= form.fields_for :validity_options, option do |option_form| %>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -282,6 +376,12 @@
               input.name = input.name.replace(/INDEX/g, validityOptionIndex);
             });
             
+            // Add event listener to the new default checkbox
+            const newDefaultCheckbox = clone.querySelector('input[name*="is_default"]');
+            if (newDefaultCheckbox) {
+              newDefaultCheckbox.addEventListener('change', handleDefaultCheckboxChange);
+            }
+            
             container.appendChild(clone);
             validityOptionIndex++;
           }
@@ -291,6 +391,67 @@
             const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
             destroyInput.value = '1';
             optionDiv.style.display = 'none';
+          }
+          
+          function handleDefaultCheckboxChange(event) {
+            const currentCheckbox = event.target;
+            
+            if (currentCheckbox.checked) {
+              // Uncheck all other default checkboxes
+              const allDefaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
+              allDefaultCheckboxes.forEach(checkbox => {
+                if (checkbox !== currentCheckbox) {
+                  checkbox.checked = false;
+                }
+              });
+            }
+          }
+          
+          // Add event listeners to existing default checkboxes
+          document.addEventListener('DOMContentLoaded', function() {
+            const defaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
+            defaultCheckboxes.forEach(checkbox => {
+              checkbox.addEventListener('change', handleDefaultCheckboxChange);
+            });
+          });
+          
+          // Custom features management
+          function addCustomFeature() {
+            const container = document.getElementById('custom-features-container');
+            const newFeatureDiv = document.createElement('div');
+            newFeatureDiv.className = 'flex items-center space-x-2 custom-feature-item';
+            newFeatureDiv.innerHTML = `
+              <input type="text" name="product[features][]" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                     placeholder="Enter custom feature"
+                     required>
+              <button type="button" onclick="removeCustomFeature(this)" class="text-red-600 hover:text-red-800">
+                <i class="fas fa-times"></i>
+              </button>
+            `;
+            container.appendChild(newFeatureDiv);
+            
+            // Focus on the new input
+            const newInput = newFeatureDiv.querySelector('input');
+            newInput.focus();
+            
+            // Show a brief success message
+            const successMsg = document.createElement('div');
+            successMsg.className = 'text-green-600 text-sm mt-1';
+            successMsg.textContent = 'Custom feature field added. Enter your feature and save the product.';
+            newFeatureDiv.appendChild(successMsg);
+            
+            // Remove the message after 3 seconds
+            setTimeout(() => {
+              if (successMsg.parentNode) {
+                successMsg.remove();
+              }
+            }, 3000);
+          }
+          
+          function removeCustomFeature(button) {
+            const featureItem = button.closest('.custom-feature-item');
+            featureItem.remove();
           }
         </script>
         

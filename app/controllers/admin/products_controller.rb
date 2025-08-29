@@ -28,7 +28,14 @@ class Admin::ProductsController < AdminController
   end
 
   def create
-    @product = Product.new(product_params)
+    # Process features parameter to handle array properly
+    processed_params = product_params
+    if processed_params[:features].present?
+      # Filter out empty strings and ensure it's an array
+      processed_params[:features] = processed_params[:features].reject(&:blank?)
+    end
+    
+    @product = Product.new(processed_params)
     
     if @product.save
       # Create default trial option if no validity options were provided
@@ -61,7 +68,17 @@ class Admin::ProductsController < AdminController
   end
 
   def update
-    if @product.update(product_params)
+    # Ensure only one validity option is marked as default
+    ensure_single_default_validity_option
+    
+    # Process features parameter to handle array properly
+    processed_params = product_params
+    if processed_params[:features].present?
+      # Filter out empty strings and ensure it's an array
+      processed_params[:features] = processed_params[:features].reject(&:blank?)
+    end
+    
+    if @product.update(processed_params)
       redirect_to admin_product_path(@product), notice: 'Product updated successfully.'
     else
       render :edit, status: :unprocessable_entity
@@ -125,8 +142,28 @@ class Admin::ProductsController < AdminController
   def product_params
     params.require(:product).permit(:name, :description, :price, :original_price, :category, 
                                    :image_url, :color, :badge, :rating, :stock, :active, :validity_type, 
-                                   :validity_duration, :validity_price, :validity_options,
+                                   :validity_duration, :validity_price, :validity_options, features: [],
                                    validity_options_attributes: [:id, :duration_type, :duration_value, 
                                                                :price, :label, :is_default, :sort_order, :active, :_destroy])
+  end
+  
+  def ensure_single_default_validity_option
+    # Get the validity options parameters
+    validity_options_params = params.dig(:product, :validity_options_attributes)
+    return unless validity_options_params
+    
+    # Find which option is being marked as default
+    default_option_id = nil
+    validity_options_params.each do |index, option_params|
+      if option_params[:is_default] == '1' || option_params[:is_default] == true
+        default_option_id = option_params[:id]
+        break
+      end
+    end
+    
+    # If a default option is being set, unset all others
+    if default_option_id
+      @product.validity_options.where.not(id: default_option_id).update_all(is_default: false)
+    end
   end
 end
