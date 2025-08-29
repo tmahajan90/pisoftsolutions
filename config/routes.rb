@@ -19,16 +19,16 @@ Rails.application.routes.draw do
     end
     resources :orders
                   resources :products do
-                member do
-                  patch :toggle_status
-                end
-                collection do
-                  post :update_trial_prices
-                  post :bulk_toggle_status
-                end
-              end
-              
-              patch 'validity_options/:validity_option_id/toggle', to: 'products#toggle_validity_option', as: :toggle_validity_option
+      member do
+        patch :toggle_status
+      end
+      collection do
+        post :update_trial_prices
+        post :bulk_toggle_status
+      end
+    end
+    
+    patch 'validity_options/:validity_option_id/toggle', to: 'products#toggle_validity_option', as: :toggle_validity_option
                   resources :contacts, only: [:index, :show, :update, :destroy] do
                 collection do
                   post :bulk_update

@@ -197,32 +197,44 @@
         <!-- Key Features -->
         <div class="bg-white rounded-xl p-6 shadow-lg">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Easy Setup & Integration</span>
+          <% if @product.features_list.any? %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <% @product.features_list.each do |feature| %>
+                <div class="flex items-center">
+                  <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                  <span class="text-gray-700"><%= feature %></span>
+                </div>
+              <% end %>
             </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">24/7 Technical Support</span>
+          <% else %>
+            <!-- Default features if none are set -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Easy Setup & Integration</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">24/7 Technical Support</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">99.9% Uptime Guarantee</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Regular Updates</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Analytics & Reporting</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Mobile Responsive</span>
+              </div>
             </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">99.9% Uptime Guarantee</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Regular Updates</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Analytics & Reporting</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Mobile Responsive</span>
-            </div>
-          </div>
+          <% end %>
         </div>
       </div>
     </div>

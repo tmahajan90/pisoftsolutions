@@ -1,0 +1,26 @@
+[Unit]
+Description=PiSoft Solutions Docker Container Monitor
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/Users/tarun/rails_apps/pisoftsolutions
+ExecStart=/Users/tarun/rails_apps/pisoftsolutions/monitor.sh
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/Users/tarun/rails_apps/pisoftsolutions
+
+[Install]
+WantedBy=multi-user.target
