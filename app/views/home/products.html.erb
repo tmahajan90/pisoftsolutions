@@ -79,7 +79,7 @@
           <!-- Product Image -->
           <div class="relative">
             <div class="h-48 bg-gradient-to-br from-<%= product.color %>-500 to-<%= product.color %>-600 flex items-center justify-center">
-              <i class="<%= product.image_url %> text-6xl text-white"></i>
+              <i class="<%= product_icon(product) %> text-6xl text-white"></i>
             </div>
             
             <!-- Badge -->
@@ -180,18 +180,43 @@
              
              <!-- Features -->
              <div class="space-y-1 mb-4">
-               <div class="flex items-center text-xs text-gray-600">
-                 <i class="fas fa-check text-green-500 mr-2"></i>
-                 <span>Premium features</span>
-               </div>
-               <div class="flex items-center text-xs text-gray-600">
-                 <i class="fas fa-check text-green-500 mr-2"></i>
-                 <span>24/7 support</span>
-               </div>
-               <div class="flex items-center text-xs text-gray-600">
-                 <i class="fas fa-check text-green-500 mr-2"></i>
-                 <span>Money-back guarantee</span>
-               </div>
+               <% 
+                 # Get the product's features
+                 product_features = product.features_list
+                 
+                 # Show up to 3 features to keep the card compact
+                 display_features = product_features.first(3)
+               %>
+               
+               <% if display_features.any? %>
+                 <% display_features.each do |feature| %>
+                   <div class="flex items-center text-xs text-gray-600">
+                     <i class="fas fa-check text-green-500 mr-2"></i>
+                     <span class="truncate"><%= feature %></span>
+                   </div>
+                 <% end %>
+                 
+                 <% if product_features.length > 3 %>
+                   <div class="flex items-center text-xs text-gray-500">
+                     <i class="fas fa-plus text-blue-500 mr-2"></i>
+                     <span>+<%= product_features.length - 3 %> more features</span>
+                   </div>
+                 <% end %>
+               <% else %>
+                 <!-- Default features if no custom features are set -->
+                 <div class="flex items-center text-xs text-gray-600">
+                   <i class="fas fa-check text-green-500 mr-2"></i>
+                   <span>Premium features</span>
+                 </div>
+                 <div class="flex items-center text-xs text-gray-600">
+                   <i class="fas fa-check text-green-500 mr-2"></i>
+                   <span>24/7 support</span>
+                 </div>
+                 <div class="flex items-center text-xs text-gray-600">
+                   <i class="fas fa-check text-green-500 mr-2"></i>
+                   <span>Money-back guarantee</span>
+                 </div>
+               <% end %>
              </div>
             
                          <!-- Action Buttons -->
@@ -328,6 +353,12 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+  
+  .truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   
   @keyframes fadeIn {

@@ -94,10 +94,18 @@
                     <%= @product.stock %> units
                   </span>
                 </div>
-                <% if @product.color.present? %>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600">Color:</span>
-                    <span class="font-semibold"><%= @product.color %></span>
+                <% if @product.colors_list.any? %>
+                  <div class="flex justify-between items-start">
+                    <span class="text-gray-600">Colors:</span>
+                    <div class="flex flex-wrap gap-2">
+                      <% @product.colors_list.each do |color| %>
+                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-<%= color %>-100 text-<%= color %>-800 border border-<%= color %>-200">
+                          <span class="w-3 h-3 rounded-full mr-1 bg-<%= color %>-500"></span>
+                          <%= color.humanize %>
+                        </span>
+                      <% end %>
+                    </div>
+                  </div>
                   </div>
                 <% end %>
               </div>

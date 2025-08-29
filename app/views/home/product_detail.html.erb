@@ -52,7 +52,7 @@
         <div class="text-center lg:text-left">
           <div class="relative">
             <div class="w-80 h-80 bg-gradient-to-br from-<%= @product.color %>-500 to-<%= @product.color %>-600 rounded-3xl flex items-center justify-center mx-auto lg:mx-0 shadow-2xl">
-              <i class="<%= @product.image_url %> text-9xl text-white"></i>
+              <i class="<%= product_icon(@product) %> text-9xl text-white"></i>
             </div>
             <!-- Badge -->
             <div class="absolute -top-4 -right-4">
@@ -317,7 +317,7 @@
         <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <div class="relative">
             <div class="h-32 bg-gradient-to-br from-<%= product.color %>-500 to-<%= product.color %>-600 flex items-center justify-center">
-              <i class="<%= product.image_url %> text-4xl text-white"></i>
+              <i class="<%= product_icon(product) %> text-4xl text-white"></i>
             </div>
             <div class="absolute top-2 left-2">
               <span class="bg-<%= get_badge_color(product.badge) %>-100 text-<%= get_badge_color(product.badge) %>-800 text-xs font-semibold px-2 py-1 rounded-full"><%= product.badge %></span>

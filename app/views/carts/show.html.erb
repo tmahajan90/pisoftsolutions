@@ -23,7 +23,7 @@
                 <div class="cart-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg" data-product-id="<%= cart_item.product.id %>">
                   <!-- Product Image -->
                   <div class="w-20 h-20 bg-gradient-to-br from-<%= cart_item.product.color %>-500 to-<%= cart_item.product.color %>-600 rounded-lg flex items-center justify-center">
-                    <i class="<%= cart_item.product.image_url %> text-3xl text-white"></i>
+                    <i class="<%= product_icon(cart_item.product) %> text-3xl text-white"></i>
                   </div>
                   
                   <!-- Product Details -->

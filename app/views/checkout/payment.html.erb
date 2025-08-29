@@ -92,7 +92,7 @@
             <% @order.order_items.includes(:product).each do |order_item| %>
               <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 <div class="w-12 h-12 bg-gradient-to-br from-<%= order_item.product.color %>-500 to-<%= order_item.product.color %>-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="<%= order_item.product.image_url %> text-lg text-white"></i>
+                  <i class="<%= product_icon(order_item.product) %> text-lg text-white"></i>
                 </div>
                 
                 <div class="flex-1 min-w-0">
