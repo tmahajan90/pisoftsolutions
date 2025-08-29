@@ -1,6 +1,8 @@
 # Use the official Ruby image as a base
 FROM ruby:3.2.3
 
+ENV RAILS_MASTER_KEY=b67ed970dbf3ce91a0ab0b94ae4cc82a
+
 # Install system dependencies
 RUN apt-get update -qq && apt-get install -y \
     build-essential \
@@ -24,8 +26,7 @@ RUN bundle install --jobs 4 --retry 3
 # Copy the rest of the application
 COPY . .
 
-# Build Tailwind CSS
-RUN bundle exec rails tailwindcss:build
+# Build Tailwind CSS at runtime instead of build time to avoid credential issues
 
 # Precompile assets (will be skipped in development)
 RUN if [ "$RAILS_ENV" = "production" ]; then bundle exec rails assets:precompile; fi

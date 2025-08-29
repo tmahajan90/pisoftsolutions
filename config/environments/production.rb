@@ -41,9 +41,6 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   # Only force SSL if FORCE_SSL is explicitly set to 'true'
   config.force_ssl = ENV['FORCE_SSL'] == 'true'
-  
-  # Debug SSL configuration
-  Rails.logger.info "SSL Configuration: FORCE_SSL=#{ENV['FORCE_SSL']}, config.force_ssl=#{config.force_ssl}"
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
