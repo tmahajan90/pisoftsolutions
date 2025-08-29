@@ -4,6 +4,9 @@ class Product < ApplicationRecord
   has_many :validity_options, dependent: :destroy
   has_many :trial_usages, dependent: :destroy
   
+  # Class-level flag to disable automatic validity option creation during seeding
+  class_attribute :skip_default_validity_option_creation, default: false
+  
   validates :name, presence: true
   validates :price, presence: true, numericality: { greater_than: 0 }
   validates :stock, presence: true, numericality: { greater_than_or_equal_to: 0 }
@@ -28,13 +31,34 @@ class Product < ApplicationRecord
   # Serialize features as JSON array
   serialize :features, coder: JSON, default: []
   
+  # Ensure features is always an array
+  before_save :ensure_features_array
+  
+  # Ensure at least one validity option exists
+  after_save :ensure_default_validity_option
+  
   # Override features= to ensure proper array handling
   def features=(value)
+    Rails.logger.debug "Product#features= called with: #{value.inspect} (class: #{value.class})"
+    
     if value.is_a?(Array)
       # Filter out empty strings and ensure unique values
       cleaned_features = value.reject(&:blank?).uniq
+      Rails.logger.debug "Setting features to cleaned array: #{cleaned_features.inspect}"
       super(cleaned_features)
+    elsif value.is_a?(String)
+      # Handle case where value might be a JSON string
+      begin
+        parsed = JSON.parse(value)
+        final_value = parsed.is_a?(Array) ? parsed : [value]
+        Rails.logger.debug "Parsed JSON string, setting features to: #{final_value.inspect}"
+        super(final_value)
+      rescue JSON::ParserError
+        Rails.logger.debug "JSON parse failed, setting features to: [#{value}]"
+        super([value])
+      end
     else
+      Rails.logger.debug "Setting features to: #{value.inspect}"
       super(value)
     end
   end
@@ -108,23 +132,60 @@ class Product < ApplicationRecord
   # Feature management methods
   def add_feature(feature)
     self.features ||= []
-    self.features << feature unless self.features.include?(feature)
+    feature = feature.to_s.strip
+    self.features << feature unless feature.blank? || self.features.include?(feature)
   end
   
   def remove_feature(feature)
     self.features ||= []
-    self.features.delete(feature)
+    self.features.delete(feature.to_s)
   end
   
   def has_feature?(feature)
-    self.features&.include?(feature) || false
+    return false if self.features.blank?
+    self.features.include?(feature.to_s)
   end
   
   def features_list
-    self.features || []
+    return [] if self.features.blank?
+    self.features.is_a?(Array) ? self.features : []
   end
   
   private
+  
+  def ensure_features_array
+    # Ensure features is always an array
+    Rails.logger.debug "ensure_features_array called, current features: #{self.features.inspect} (class: #{self.features.class})"
+    
+    if self.features.nil?
+      Rails.logger.debug "Features is nil, setting to empty array"
+      self.features = []
+    elsif !self.features.is_a?(Array)
+      Rails.logger.debug "Features is not an array, converting to array"
+      self.features = [self.features].compact
+    else
+      Rails.logger.debug "Features is already an array: #{self.features.inspect}"
+    end
+  end
+  
+  def ensure_default_validity_option
+    # Ensure at least one validity option exists for this product
+    # Skip if flag is set (e.g., during seeding)
+    return if self.class.skip_default_validity_option_creation
+    
+    if validity_options.empty?
+      Rails.logger.debug "No validity options found, creating default trial option"
+      validity_options.create!(
+        duration_type: 'days',
+        duration_value: 1,
+        price: 1,
+        label: '1 Day Trial',
+        is_default: true,
+        sort_order: 0,
+        active: true
+      )
+    end
+  end
   
   def ensure_single_default_validity_option
     # Get all default validity options for this product

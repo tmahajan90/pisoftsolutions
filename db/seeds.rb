@@ -2,6 +2,9 @@
 # development, test). The code here should be idempotent so that it can be executed at any point in every environment.
 # The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
 
+# Disable automatic validity option creation during seeding to avoid conflicts
+Product.skip_default_validity_option_creation = true
+
 # Clear existing data (only if explicitly requested)
 # Product.destroy_all
 # User.destroy_all
@@ -269,6 +272,14 @@ products_data.each do |product_data|
   end
   
   # Create validity options for the product (only if they don't exist)
+  # First, ensure no existing options are marked as default to avoid conflicts
+  if product.validity_options.exists?
+    product.validity_options.update_all(is_default: false)
+  end
+  
+  # Track if we've set a default option for this product
+  default_set = false
+  
   validity_options.each_with_index do |option_data, index|
     existing_option = product.validity_options.find_by(
       duration_type: option_data[:type],
@@ -277,15 +288,21 @@ products_data.each do |product_data|
     )
     
     unless existing_option
+      # Set the 30-day option (index 1) as default, but only if we haven't set one yet
+      should_be_default = index == 1 && !default_set
+      
       product.validity_options.create!(
         duration_type: option_data[:type],
         duration_value: option_data[:duration],
         price: option_data[:price],
         label: option_data[:label],
-        is_default: index == 1, # Make 30 days the default, not trial
+        is_default: should_be_default,
         sort_order: index,
         active: true # All options are active by default
       )
+      
+      # Mark that we've set a default option
+      default_set = true if should_be_default
     end
   end
 end
@@ -405,3 +422,8 @@ else
   )
   puts "Created new demo user: #{demo_user.email}"
 end
+
+# Re-enable automatic validity option creation
+Product.skip_default_validity_option_creation = false
+
+puts "✅ Setup complete!"

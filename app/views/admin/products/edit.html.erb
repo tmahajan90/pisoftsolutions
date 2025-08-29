@@ -15,7 +15,9 @@
     </div>
     
     <div class="p-6">
-      <%= form_with model: [:admin, @product], local: true, class: "space-y-6" do |form| %>
+              <%= form_with model: [:admin, @product], local: true, class: "space-y-6" do |form| %>
+          <!-- Debug hidden field to track form submission -->
+          <input type="hidden" name="debug_features" value="<%= @product.features_list.inspect %>">
         <% if @product.errors.any? %>
           <div class="bg-red-50 border border-red-200 rounded-md p-4">
             <div class="flex">
@@ -198,6 +200,18 @@
               <button type="button" onclick="addCustomFeature()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
                 <i class="fas fa-plus mr-1"></i>Add Custom Feature
               </button>
+              <!-- Test button for debugging -->
+              <button type="button" onclick="console.log('Test button clicked'); alert('JavaScript is working!');" class="mt-2 ml-2 text-red-600 hover:text-red-800 text-sm">
+                <i class="fas fa-bug mr-1"></i>Test JS
+              </button>
+              <!-- Test validity options button -->
+              <button type="button" onclick="console.log('Validity test clicked'); alert('Validity options test: ' + document.getElementById('validity-options-container').children.length + ' options found');" class="mt-2 ml-2 text-green-600 hover:text-green-800 text-sm">
+                <i class="fas fa-clock mr-1"></i>Test Validity
+              </button>
+              <!-- Test form submission button -->
+              <button type="button" onclick="console.log('Form test clicked'); const form = document.querySelector('form'); const features = form.querySelectorAll('input[name=\"product[features][]\"]'); alert('Form test: ' + features.length + ' feature inputs found');" class="mt-2 ml-2 text-purple-600 hover:text-purple-800 text-sm">
+                <i class="fas fa-list mr-1"></i>Test Form
+              </button>
             </div>
           </div>
         </div>
@@ -366,58 +380,24 @@
         <script>
           let validityOptionIndex = <%= @product.validity_options.count %>;
           
-          function addValidityOption() {
-            const container = document.getElementById('validity-options-container');
-            const template = document.getElementById('validity-option-template');
-            const clone = template.content.cloneNode(true);
-            
-            // Replace INDEX with actual index
-            clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
-              input.name = input.name.replace(/INDEX/g, validityOptionIndex);
-            });
-            
-            // Add event listener to the new default checkbox
-            const newDefaultCheckbox = clone.querySelector('input[name*="is_default"]');
-            if (newDefaultCheckbox) {
-              newDefaultCheckbox.addEventListener('change', handleDefaultCheckboxChange);
-            }
-            
-            container.appendChild(clone);
-            validityOptionIndex++;
-          }
-          
-          function removeValidityOption(button) {
-            const optionDiv = button.closest('.validity-option');
-            const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
-            destroyInput.value = '1';
-            optionDiv.style.display = 'none';
-          }
-          
-          function handleDefaultCheckboxChange(event) {
-            const currentCheckbox = event.target;
-            
-            if (currentCheckbox.checked) {
-              // Uncheck all other default checkboxes
-              const allDefaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
-              allDefaultCheckboxes.forEach(checkbox => {
-                if (checkbox !== currentCheckbox) {
-                  checkbox.checked = false;
-                }
-              });
-            }
-          }
-          
-          // Add event listeners to existing default checkboxes
-          document.addEventListener('DOMContentLoaded', function() {
-            const defaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
-            defaultCheckboxes.forEach(checkbox => {
-              checkbox.addEventListener('change', handleDefaultCheckboxChange);
-            });
-          });
-          
-          // Custom features management
-          function addCustomFeature() {
+          // Define all functions globally first, before DOM ready
+          window.addCustomFeature = function() {
+            console.log('addCustomFeature called');
+            alert('addCustomFeature function is working!');
             const container = document.getElementById('custom-features-container');
+            
+            if (!container) {
+              console.error('custom-features-container not found');
+              alert('Error: custom-features-container not found');
+              return;
+            }
+            
+            // Remove any "no features" message
+            const noFeaturesMsg = container.querySelector('.text-gray-500.italic');
+            if (noFeaturesMsg) {
+              noFeaturesMsg.remove();
+            }
+            
             const newFeatureDiv = document.createElement('div');
             newFeatureDiv.className = 'flex items-center space-x-2 custom-feature-item';
             newFeatureDiv.innerHTML = `
@@ -435,6 +415,8 @@
             const newInput = newFeatureDiv.querySelector('input');
             newInput.focus();
             
+            console.log('Custom feature field added successfully');
+            
             // Show a brief success message
             const successMsg = document.createElement('div');
             successMsg.className = 'text-green-600 text-sm mt-1';
@@ -447,12 +429,93 @@
                 successMsg.remove();
               }
             }, 3000);
-          }
+          };
           
-          function removeCustomFeature(button) {
+          window.removeCustomFeature = function(button) {
+            console.log('removeCustomFeature called');
             const featureItem = button.closest('.custom-feature-item');
-            featureItem.remove();
-          }
+            if (featureItem) {
+              featureItem.remove();
+              console.log('Custom feature removed');
+              
+              // Check if no custom features remain and show message
+              const container = document.getElementById('custom-features-container');
+              const remainingFeatures = container.querySelectorAll('.custom-feature-item');
+              if (remainingFeatures.length === 0) {
+                const noFeaturesMsg = document.createElement('div');
+                noFeaturesMsg.className = 'text-sm text-gray-500 italic';
+                noFeaturesMsg.textContent = 'No custom features added yet. Click "Add Custom Feature" to add one.';
+                container.appendChild(noFeaturesMsg);
+              }
+            }
+          };
+          
+          // Make all functions globally available
+          window.addValidityOption = function() {
+            const container = document.getElementById('validity-options-container');
+            const template = document.getElementById('validity-option-template');
+            const clone = template.content.cloneNode(true);
+            
+            // Replace INDEX with actual index
+            clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
+              input.name = input.name.replace(/INDEX/g, validityOptionIndex);
+            });
+            
+            // Add event listener to the new default checkbox
+            const newDefaultCheckbox = clone.querySelector('input[name*="is_default"]');
+            if (newDefaultCheckbox) {
+              newDefaultCheckbox.addEventListener('change', handleDefaultCheckboxChange);
+            }
+            
+            container.appendChild(clone);
+            validityOptionIndex++;
+          };
+          
+          window.removeValidityOption = function(button) {
+            const optionDiv = button.closest('.validity-option');
+            const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
+            destroyInput.value = '1';
+            optionDiv.style.display = 'none';
+          };
+          
+          window.handleDefaultCheckboxChange = function(event) {
+            const currentCheckbox = event.target;
+            
+            if (currentCheckbox.checked) {
+              // Uncheck all other default checkboxes
+              const allDefaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
+              allDefaultCheckboxes.forEach(checkbox => {
+                if (checkbox !== currentCheckbox) {
+                  checkbox.checked = false;
+                }
+              });
+            }
+          };
+          
+          // Add event listeners to existing default checkboxes
+          document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners');
+            
+            const defaultCheckboxes = document.querySelectorAll('input[name*="is_default"]');
+            defaultCheckboxes.forEach(checkbox => {
+              checkbox.addEventListener('change', handleDefaultCheckboxChange);
+            });
+            
+            // Test if custom features container exists
+            const customFeaturesContainer = document.getElementById('custom-features-container');
+            if (customFeaturesContainer) {
+              console.log('Custom features container found');
+            } else {
+              console.error('Custom features container not found');
+            }
+            
+            // Test if addCustomFeature function is available
+            if (typeof addCustomFeature === 'function') {
+              console.log('addCustomFeature function is available');
+            } else {
+              console.error('addCustomFeature function is not available');
+            }
+          });
         </script>
         
         <!-- Form Actions -->

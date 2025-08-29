@@ -30,9 +30,21 @@ class Admin::ProductsController < AdminController
   def create
     # Process features parameter to handle array properly
     processed_params = product_params
+    
+    # Debug logging for features
+    Rails.logger.debug "Raw features param: #{params[:product][:features].inspect}"
+    Rails.logger.debug "Processed features param: #{processed_params[:features].inspect}"
+    Rails.logger.debug "Debug features param: #{params[:debug_features].inspect}"
+    Rails.logger.debug "All params: #{params.inspect}"
+    
     if processed_params[:features].present?
       # Filter out empty strings and ensure it's an array
-      processed_params[:features] = processed_params[:features].reject(&:blank?)
+      features_array = processed_params[:features].is_a?(Array) ? processed_params[:features] : [processed_params[:features]]
+      processed_params[:features] = features_array.reject(&:blank?).uniq
+      Rails.logger.debug "Final features array: #{processed_params[:features].inspect}"
+    else
+      processed_params[:features] = []
+      Rails.logger.debug "No features found, setting to empty array"
     end
     
     @product = Product.new(processed_params)
@@ -73,9 +85,21 @@ class Admin::ProductsController < AdminController
     
     # Process features parameter to handle array properly
     processed_params = product_params
+    
+    # Debug logging for features
+    Rails.logger.debug "Raw features param: #{params[:product][:features].inspect}"
+    Rails.logger.debug "Processed features param: #{processed_params[:features].inspect}"
+    Rails.logger.debug "Debug features param: #{params[:debug_features].inspect}"
+    Rails.logger.debug "All params: #{params.inspect}"
+    
     if processed_params[:features].present?
       # Filter out empty strings and ensure it's an array
-      processed_params[:features] = processed_params[:features].reject(&:blank?)
+      features_array = processed_params[:features].is_a?(Array) ? processed_params[:features] : [processed_params[:features]]
+      processed_params[:features] = features_array.reject(&:blank?).uniq
+      Rails.logger.debug "Final features array: #{processed_params[:features].inspect}"
+    else
+      processed_params[:features] = []
+      Rails.logger.debug "No features found, setting to empty array"
     end
     
     if @product.update(processed_params)
