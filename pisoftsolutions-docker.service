@@ -1,0 +1,19 @@
+[Unit]
+Description=PiSoft Solutions Docker Services
+Requires=docker.service
+After=docker.service
+StartLimitInterval=0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/Users/tarun/rails_apps/pisoftsolutions
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+ExecReload=/usr/local/bin/docker-compose restart
+TimeoutStartSec=0
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
