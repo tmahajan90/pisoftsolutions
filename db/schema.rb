@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_29_140746) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_01_130712) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -108,8 +108,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_140746) do
   create_table "products", force: :cascade do |t|
     t.string "name"
     t.text "description"
-    t.decimal "price"
-    t.decimal "original_price"
     t.string "category"
     t.string "image_url"
     t.string "badge"
@@ -158,6 +156,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_140746) do
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "original_price", precision: 10, scale: 2
     t.index ["active"], name: "index_validity_options_on_active"
     t.index ["product_id", "is_default"], name: "index_validity_options_on_product_id_and_is_default"
     t.index ["product_id", "sort_order"], name: "index_validity_options_on_product_id_and_sort_order"

@@ -10,7 +10,6 @@ class Product < ApplicationRecord
   class_attribute :skip_default_validity_option_creation, default: false
   
   validates :name, presence: true
-  validates :price, presence: true, numericality: { greater_than: 0 }
   validates :stock, presence: true, numericality: { greater_than_or_equal_to: 0 }
   
   scope :in_stock, -> { where('stock > 0') }
@@ -76,6 +75,15 @@ class Product < ApplicationRecord
     else
       super(value.to_s.presence || 'blue')
     end
+  end
+  
+  # Price methods now delegate to validity options
+  def price
+    default_validity_option&.price || 0
+  end
+  
+  def original_price
+    default_validity_option&.original_price || price
   end
   
   def discount_percentage
@@ -219,6 +227,7 @@ class Product < ApplicationRecord
         duration_type: 'days',
         duration_value: 1,
         price: 1,
+        original_price: 1,
         label: '1 Day Trial',
         is_default: true,
         sort_order: 0,
