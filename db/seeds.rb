@@ -39,10 +39,6 @@ existing_products = 0
 products_data.each do |product_data|
   validity_options = product_data.delete(:validity_options)
   
-  # Debug: Check what's in product_data
-  puts "DEBUG: Product data keys: #{product_data.keys}"
-  puts "DEBUG: Product data: #{product_data.inspect}"
-  
   # Check if product exists
   existing_product = Product.find_by(name: product_data[:name])
   
@@ -51,7 +47,6 @@ products_data.each do |product_data|
     product = existing_product
   else
     # Create new product
-    puts "DEBUG: About to create product with data: #{product_data.inspect}"
     product = Product.create!(product_data)
     created_products += 1
   end
