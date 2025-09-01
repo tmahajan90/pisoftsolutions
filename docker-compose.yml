@@ -21,10 +21,10 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
           cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
       restart_policy:
         condition: on-failure
         delay: 10s
@@ -36,18 +36,18 @@ services:
       postgres
       -c shared_preload_libraries=pg_stat_statements
       -c pg_stat_statements.track=all
-      -c max_connections=200
-      -c shared_buffers=256MB
-      -c effective_cache_size=512MB
-      -c maintenance_work_mem=128MB
+      -c max_connections=50
+      -c shared_buffers=128MB
+      -c effective_cache_size=256MB
+      -c maintenance_work_mem=64MB
       -c checkpoint_completion_target=0.9
       -c wal_buffers=32MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=8MB
-      -c min_wal_size=2GB
-      -c max_wal_size=8GB
+      -c work_mem=4MB
+      -c min_wal_size=1GB
+      -c max_wal_size=2GB
       -c log_min_duration_statement=1000
       -c log_checkpoints=on
       -c log_connections=on
@@ -84,8 +84,8 @@ services:
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       FORCE_SSL: false
-      RAILS_MAX_THREADS: 5
-      WEB_CONCURRENCY: 2
+      RAILS_MAX_THREADS: 2
+      WEB_CONCURRENCY: 1
     depends_on:
       db:
         condition: service_healthy
@@ -93,11 +93,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 2G
-          cpus: '2.0'
-        reservations:
           memory: 1G
-          cpus: '1.0'
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
       restart_policy:
         condition: on-failure
         delay: 10s
