@@ -20,6 +20,8 @@ products_data = [
     badge: 'Popular',
     rating: 4.9,
     stock: 100,
+    active: true,
+    features: 'Unlimited messaging, Bulk campaigns, Media sharing, Template management, Analytics dashboard, API integration, 24/7 support',
     validity_options: [
       { duration: 1, type: 'days', price: 1, original_price: 1, label: '1 Day Trial' },
       { duration: 30, type: 'days', price: 749, original_price: 1499, label: '30 Days' },
@@ -281,15 +283,14 @@ products_data.each do |product_data|
   validity_options.each_with_index do |option_data, index|
     existing_option = product.validity_options.find_by(
       duration_type: option_data[:type],
-      duration_value: option_data[:duration],
-      price: option_data[:price]
+      duration_value: option_data[:duration]
     )
     
     unless existing_option
       # Set the 30-day option (index 1) as default, but only if we haven't set one yet
       should_be_default = index == 1 && !default_set
       
-      product.validity_options.create!(
+      validity_option = product.validity_options.create!(
         duration_type: option_data[:type],
         duration_value: option_data[:duration],
         price: option_data[:price],
@@ -302,6 +303,10 @@ products_data.each do |product_data|
       
       # Mark that we've set a default option
       default_set = true if should_be_default
+      
+      puts "  Created validity option: #{validity_option.label} - ₹#{validity_option.price} (was ₹#{validity_option.original_price})"
+    else
+      puts "  Found existing validity option: #{existing_option.label}"
     end
   end
 end
