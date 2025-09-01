@@ -36,7 +36,7 @@ class CheckoutController < ApplicationController
           order: @order,
           product: cart_item.product,
           quantity: cart_item.quantity,
-          price: cart_item.validity_price || cart_item.product.price,
+          price: cart_item.validity_price || cart_item.product.default_validity_option&.price || 0,
           validity_type: cart_item.validity_type,
           validity_duration: cart_item.validity_duration
         )
@@ -114,7 +114,7 @@ class CheckoutController < ApplicationController
             order: @order,
             product: cart_item.product,
             quantity: cart_item.quantity,
-            price: cart_item.validity_price || cart_item.product.price,
+            price: cart_item.validity_price || cart_item.product.default_validity_option&.price || 0,
             validity_type: cart_item.validity_type,
             validity_duration: cart_item.validity_duration
           )

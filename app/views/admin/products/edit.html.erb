@@ -65,18 +65,16 @@
             </div>
           </div>
           
-          <!-- Pricing & Stock -->
+          <!-- Stock & Settings -->
           <div class="space-y-4">
-            <h4 class="text-lg font-medium text-gray-900">Pricing & Stock</h4>
+            <h4 class="text-lg font-medium text-gray-900">Stock & Settings</h4>
             
-            <div>
-              <%= form.label :price, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "0.00" %>
-            </div>
-            
-            <div>
-              <%= form.label :original_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :original_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Original price (optional)" %>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                <span class="text-sm text-blue-800 font-medium">Pricing Information:</span>
+              </div>
+              <p class="text-sm text-blue-700 mt-1">Product pricing is now managed through Validity Options below. Each validity option can have its own price and original price.</p>
             </div>
             
             <div>
@@ -260,11 +258,16 @@
               <% trial_option = @product.trial_option %>
               <% if trial_option %>
                 <%= form.fields_for :validity_options, trial_option do |trial_form| %>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Trial Price (₹)</label>
                       <%= trial_form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "1.00" %>
                       <p class="text-xs text-gray-500 mt-1">Set to ₹1 for nominal charge or ₹0 for free trial</p>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Trial Original Price (₹)</label>
+                      <%= trial_form.number_field :original_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "1.00" %>
+                      <p class="text-xs text-gray-500 mt-1">Usually same as trial price</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Trial Label</label>
@@ -319,7 +322,7 @@
               <% @product.validity_options.sorted_by_duration.each_with_index do |option, index| %>
                 <div class="validity-option border border-gray-200 rounded-lg p-4 bg-gray-50">
                   <%= form.fields_for :validity_options, option do |option_form| %>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Duration Type</label>
                         <%= option_form.select :duration_type, 
@@ -332,12 +335,19 @@
                         <%= option_form.number_field :duration_value, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
                       </div>
                       <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                        <%= option_form.text_field :label, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
                         <%= option_form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
                       </div>
                       <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                        <%= option_form.text_field :label, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
+                        <%= option_form.number_field :original_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" %>
+                        <p class="text-xs text-gray-500 mt-1">Leave empty or same as price if no discount</p>
                       </div>
                     </div>
                     <div class="mt-3 flex items-center justify-between">
@@ -363,7 +373,7 @@
             
             <template id="validity-option-template">
               <div class="validity-option border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Duration Type</label>
                     <select name="product[validity_options_attributes][INDEX][duration_type]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -378,12 +388,19 @@
                     <input type="number" name="product[validity_options_attributes][INDEX][duration_value]" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                    <input type="text" name="product[validity_options_attributes][INDEX][label]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30 Days">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
                     <input type="number" name="product[validity_options_attributes][INDEX][price]" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="999.00">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                    <input type="text" name="product[validity_options_attributes][INDEX][label]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30 Days">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
+                    <input type="number" name="product[validity_options_attributes][INDEX][original_price]" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="1999.00">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty or same as price if no discount</p>
                   </div>
                 </div>
                 <div class="mt-3 flex items-center justify-between">

@@ -77,19 +77,7 @@ class Product < ApplicationRecord
     end
   end
   
-  # Price methods now delegate to validity options
-  def price
-    default_validity_option&.price || 0
-  end
-  
-  def original_price
-    default_validity_option&.original_price || price
-  end
-  
-  def discount_percentage
-    return 0 if original_price.nil? || original_price <= price
-    ((original_price - price) / original_price * 100).round
-  end
+  # Price methods removed - pricing is now handled by ValidityOptions
   
   def in_stock?
     stock > 0

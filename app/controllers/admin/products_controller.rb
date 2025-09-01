@@ -174,11 +174,11 @@ class Admin::ProductsController < AdminController
   end
 
   def product_params
-    params.require(:product).permit(:name, :description, :price, :original_price, :category, 
+    params.require(:product).permit(:name, :description, :category, 
                                    :image_url, :badge, :rating, :stock, :active, :validity_type, 
                                    :validity_duration, :validity_price, :validity_options, :color, features: [],
                                    validity_options_attributes: [:id, :duration_type, :duration_value, 
-                                                               :price, :label, :is_default, :sort_order, :active, :_destroy])
+                                                               :price, :original_price, :label, :is_default, :sort_order, :active, :_destroy])
   end
   
   def ensure_single_default_validity_option

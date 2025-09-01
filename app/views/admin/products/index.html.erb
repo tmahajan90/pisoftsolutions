@@ -267,9 +267,10 @@
                 </div>
               </td>
               <td class="px-3 py-4">
-                <div class="text-sm font-semibold text-gray-900">₹<%= number_with_precision(product.price, precision: 0) %></div>
-                <% if product.original_price && product.original_price > product.price %>
-                  <div class="text-xs text-gray-500 line-through">₹<%= number_with_precision(product.original_price, precision: 0) %></div>
+                <% default_option = product.default_validity_option || product.validity_options.first %>
+                <div class="text-sm font-semibold text-gray-900">₹<%= number_with_precision(default_option&.price || 0, precision: 0) %></div>
+                <% if default_option && default_option.has_discount? %>
+                  <div class="text-xs text-gray-500 line-through">₹<%= number_with_precision(default_option.original_price, precision: 0) %></div>
                 <% end %>
               </td>
               <td class="px-3 py-4">

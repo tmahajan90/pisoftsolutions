@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_09_01_130712) do
+ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -110,6 +110,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_01_130712) do
     t.text "description"
     t.string "category"
     t.string "image_url"
+    t.string "color", default: "blue"
     t.string "badge"
     t.decimal "rating"
     t.integer "stock"
@@ -117,7 +118,6 @@ ActiveRecord::Schema[7.1].define(version: 2025_09_01_130712) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.text "features"
-    t.string "color", default: "blue"
     t.index ["active"], name: "index_products_on_active"
     t.index ["category"], name: "index_products_on_category"
   end

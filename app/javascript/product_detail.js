@@ -32,6 +32,71 @@ $(document).ready(function() {
     }
   }
   
+  // Update main pricing display based on selected plan
+  function updateMainPricingDisplay(selectedPlan) {
+    console.log('=== updateMainPricingDisplay called ===');
+    console.log('Selected plan for main display:', selectedPlan);
+    
+    // Find the main pricing display elements
+    const mainPricingContainer = document.querySelector('.bg-white.rounded-2xl.p-6.shadow-lg.border.border-gray-100');
+    if (!mainPricingContainer) {
+      console.error('Main pricing container not found');
+      return;
+    }
+    
+    // Get the current price element
+    const currentPriceEl = mainPricingContainer.querySelector('.text-4xl.font-bold');
+    const originalPriceEl = mainPricingContainer.querySelector('.text-2xl.text-gray-500.line-through');
+    const planLabelEl = mainPricingContainer.querySelector('.text-lg.text-gray-600');
+    const savingsBadgeEl = mainPricingContainer.querySelector('.bg-green-100.text-green-800');
+    
+    if (currentPriceEl) {
+      currentPriceEl.textContent = '₹' + Math.round(selectedPlan.price);
+      console.log('Updated main price to: ₹' + Math.round(selectedPlan.price));
+    }
+    
+    // Update original price and savings if there's a discount
+    if (selectedPlan.original_price && selectedPlan.original_price > selectedPlan.price) {
+      const discountPercentage = Math.round(((selectedPlan.original_price - selectedPlan.price) / selectedPlan.original_price) * 100);
+      const savingsAmount = Math.round(selectedPlan.original_price - selectedPlan.price);
+      
+      if (originalPriceEl) {
+        originalPriceEl.textContent = '₹' + Math.round(selectedPlan.original_price);
+        originalPriceEl.style.display = 'inline';
+      } else if (currentPriceEl) {
+        // Create original price element if it doesn't exist
+        const newOriginalPriceEl = document.createElement('span');
+        newOriginalPriceEl.className = 'text-2xl text-gray-500 line-through';
+        newOriginalPriceEl.textContent = '₹' + Math.round(selectedPlan.original_price);
+        currentPriceEl.parentNode.insertBefore(newOriginalPriceEl, currentPriceEl.nextSibling);
+      }
+      
+      if (savingsBadgeEl) {
+        savingsBadgeEl.innerHTML = '<i class="fas fa-tag mr-1"></i>Save ' + discountPercentage + '% (₹' + savingsAmount + ')';
+        savingsBadgeEl.style.display = 'inline-flex';
+      } else if (planLabelEl) {
+        // Create savings badge if it doesn't exist
+        const newSavingsBadge = document.createElement('span');
+        newSavingsBadge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800';
+        newSavingsBadge.innerHTML = '<i class="fas fa-tag mr-1"></i>Save ' + discountPercentage + '% (₹' + savingsAmount + ')';
+        planLabelEl.parentNode.appendChild(newSavingsBadge);
+      }
+    } else {
+      // Hide original price and savings if no discount
+      if (originalPriceEl) {
+        originalPriceEl.style.display = 'none';
+      }
+      if (savingsBadgeEl) {
+        savingsBadgeEl.style.display = 'none';
+      }
+    }
+    
+    if (planLabelEl) {
+      planLabelEl.textContent = selectedPlan.label + ' Plan';
+      console.log('Updated plan label to:', selectedPlan.label + ' Plan');
+    }
+  }
+  
   // Update plan details based on selection
   function updatePlanDetails() {
     console.log('=== updatePlanDetails called ===');
@@ -52,6 +117,8 @@ $(document).ready(function() {
     // Get the elements
     const planNameEl = document.getElementById('plan-name');
     const planPriceEl = document.getElementById('plan-price');
+    const planOriginalPriceEl = document.getElementById('plan-original-price');
+    const planSavingsEl = document.getElementById('plan-savings');
     const planDescEl = document.getElementById('plan-description');
     const planIconEl = document.getElementById('plan-icon');
     const addToCartBtn = document.getElementById('add-to-cart-btn');
@@ -66,6 +133,9 @@ $(document).ready(function() {
       trialStatus: !!trialStatusEl
     });
     
+    // Update the main pricing display
+    updateMainPricingDisplay(selectedPlan);
+    
     // Update the content
     if (planNameEl && planPriceEl && planDescEl && planIconEl) {
       // Update plan name
@@ -73,8 +143,32 @@ $(document).ready(function() {
       console.log('Updated plan name to:', selectedPlan.label);
       
       // Update plan price
-      planPriceEl.textContent = '₹' + selectedPlan.price;
-      console.log('Updated plan price to: ₹' + selectedPlan.price);
+      planPriceEl.textContent = '₹' + Math.round(selectedPlan.price);
+      console.log('Updated plan price to: ₹' + Math.round(selectedPlan.price));
+      
+      // Update original price and savings if there's a discount
+      if (selectedPlan.original_price && selectedPlan.original_price > selectedPlan.price) {
+        const discountPercentage = Math.round(((selectedPlan.original_price - selectedPlan.price) / selectedPlan.original_price) * 100);
+        const savingsAmount = Math.round(selectedPlan.original_price - selectedPlan.price);
+        
+        if (planOriginalPriceEl) {
+          planOriginalPriceEl.textContent = '₹' + Math.round(selectedPlan.original_price);
+          planOriginalPriceEl.style.display = 'block';
+        }
+        
+        if (planSavingsEl) {
+          planSavingsEl.textContent = 'Save ' + discountPercentage + '% (₹' + savingsAmount + ')';
+          planSavingsEl.style.display = 'block';
+        }
+      } else {
+        // Hide original price and savings if no discount
+        if (planOriginalPriceEl) {
+          planOriginalPriceEl.style.display = 'none';
+        }
+        if (planSavingsEl) {
+          planSavingsEl.style.display = 'none';
+        }
+      }
       
       // Update description and icon
       if (selectedPlan.type === 'lifetime') {

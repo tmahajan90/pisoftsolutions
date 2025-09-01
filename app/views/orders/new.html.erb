@@ -62,10 +62,14 @@
                     <p class="text-xs text-gray-500"><%= cart_item.validity_display %></p>
                   <% end %>
                   <div class="flex items-center mt-1">
-                    <span class="font-bold text-<%= cart_item.product.color %>-600">₹<%= cart_item.validity_price || cart_item.product.price %></span>
-                    <% if cart_item.validity_price.blank? && cart_item.product.original_price && cart_item.product.original_price > cart_item.product.price %>
-                      <span class="text-sm text-gray-500 line-through ml-2">₹<%= cart_item.product.original_price %></span>
-                    <% end %>
+                    <span class="font-bold text-<%= cart_item.product.color %>-600">₹<%= cart_item.validity_price || cart_item.product.default_validity_option&.price || 0 %></span>
+                    <% 
+                      if cart_item.validity_price.blank?
+                        default_option = cart_item.product.default_validity_option || cart_item.product.validity_options.first
+                        if default_option && default_option.has_discount? %>
+                          <span class="text-sm text-gray-500 line-through ml-2">₹<%= default_option.original_price %></span>
+                        <% end
+                      end %>
                   </div>
                 </div>
                 

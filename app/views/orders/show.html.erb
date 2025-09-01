@@ -139,9 +139,13 @@
                   <span class="text-sm text-gray-600">Qty: <%= order_item.quantity %></span>
                   <span class="mx-2">•</span>
                   <span class="font-bold text-<%= order_item.product.color %>-600">₹<%= order_item.price %></span>
-                  <% if order_item.validity_type.blank? && order_item.product.original_price && order_item.product.original_price > order_item.product.price %>
-                    <span class="text-sm text-gray-500 line-through ml-2">₹<%= order_item.product.original_price %></span>
-                  <% end %>
+                  <% 
+                    if order_item.validity_type.blank?
+                      default_option = order_item.product.default_validity_option || order_item.product.validity_options.first
+                      if default_option && default_option.has_discount? %>
+                        <span class="text-sm text-gray-500 line-through ml-2">₹<%= default_option.original_price %></span>
+                      <% end
+                    end %>
                 </div>
                 <% if order_item.validity_type.present? %>
                   <div class="flex items-center mt-1">

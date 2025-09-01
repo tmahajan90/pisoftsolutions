@@ -78,14 +78,15 @@
               </div>
               
               <div class="space-y-2">
+                <% default_option = @product.default_validity_option || @product.validity_options.first %>
                 <div class="flex justify-between">
                   <span class="text-gray-600">Price:</span>
-                  <span class="font-semibold text-lg">₹<%= number_with_precision(@product.price, precision: 0) %></span>
+                  <span class="font-semibold text-lg">₹<%= number_with_precision(default_option&.price || 0, precision: 0) %></span>
                 </div>
-                <% if @product.original_price && @product.original_price > @product.price %>
+                <% if default_option && default_option.has_discount? %>
                   <div class="flex justify-between">
                     <span class="text-gray-600">Original Price:</span>
-                    <span class="text-gray-500 line-through">₹<%= number_with_precision(@product.original_price, precision: 0) %></span>
+                    <span class="text-gray-500 line-through">₹<%= number_with_precision(default_option.original_price, precision: 0) %></span>
                   </div>
                 <% end %>
                 <div class="flex justify-between">
