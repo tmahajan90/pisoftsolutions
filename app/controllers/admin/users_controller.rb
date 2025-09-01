@@ -1,5 +1,6 @@
 class Admin::UsersController < AdminController
   before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :check_edit_permissions, only: [:edit, :update, :destroy]
 
   def index
     @users = User.includes(:orders)
@@ -56,5 +57,19 @@ class Admin::UsersController < AdminController
 
   def user_params
     params.require(:user).permit(:name, :email, :phone, :role, :password, :password_confirmation)
+  end
+
+  def check_edit_permissions
+    # Only admin users can edit/delete other users
+    unless current_user.admin?
+      redirect_to admin_users_path, alert: 'Access denied. Admin privileges required to edit users.'
+      return
+    end
+
+    # Admin users cannot edit/delete themselves
+    if @user == current_user
+      redirect_to admin_users_path, alert: 'You cannot edit or delete your own account.'
+      return
+    end
   end
 end

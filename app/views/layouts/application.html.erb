@@ -17,52 +17,49 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-      .group:hover .group-hover\:block {
-        display: block !important;
-      }
-      .group .group-hover\:block:hover {
-        display: block !important;
-      }
+      /* Dropdown styles handled by JavaScript */
     </style>
     
     <script>
       function initializeDropdown() {
-        const dropdown = document.getElementById('user-dropdown');
         const dropdownButton = document.getElementById('user-dropdown-button');
         const dropdownMenu = document.getElementById('user-dropdown-menu');
-        let hideTimeout;
         
-        if (dropdown && dropdownButton && dropdownMenu) {
+        console.log('Initializing dropdown:', { dropdownButton, dropdownMenu });
+        
+        if (dropdownButton && dropdownMenu) {
           // Remove existing event listeners to prevent duplicates
-          dropdown.removeEventListener('mouseenter', dropdown.mouseenterHandler);
-          dropdown.removeEventListener('mouseleave', dropdown.mouseleaveHandler);
-          dropdownButton.removeEventListener('click', dropdownButton.clickHandler);
+          if (dropdownButton.clickHandler) {
+            dropdownButton.removeEventListener('click', dropdownButton.clickHandler);
+          }
           
-          // Show dropdown on mouse enter
-          dropdown.mouseenterHandler = function() {
-            clearTimeout(hideTimeout);
-            dropdownMenu.classList.remove('hidden');
-          };
-          dropdown.addEventListener('mouseenter', dropdown.mouseenterHandler);
-          
-          // Hide dropdown on mouse leave with 1 second delay
-          dropdown.mouseleaveHandler = function() {
-            hideTimeout = setTimeout(function() {
-              dropdownMenu.classList.add('hidden');
-            }, 1000);
-          };
-          dropdown.addEventListener('mouseleave', dropdown.mouseleaveHandler);
-          
-          // Also handle button click for mobile/touch devices
+          // Handle button click to toggle dropdown
           dropdownButton.clickHandler = function(e) {
             e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('Dropdown button clicked');
+            
             if (dropdownMenu.classList.contains('hidden')) {
               dropdownMenu.classList.remove('hidden');
+              console.log('Dropdown shown');
             } else {
               dropdownMenu.classList.add('hidden');
+              console.log('Dropdown hidden');
             }
           };
+          
           dropdownButton.addEventListener('click', dropdownButton.clickHandler);
+          console.log('Dropdown event listener added');
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', function(e) {
+            if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+              dropdownMenu.classList.add('hidden');
+            }
+          });
+        } else {
+          console.log('Dropdown elements not found');
         }
       }
       
@@ -109,7 +106,7 @@
             <% end %>
             
             <% if logged_in? %>
-              <div class="relative group" id="user-dropdown">
+              <div class="relative" id="user-dropdown">
                 <button class="flex items-center text-gray-700 hover:text-indigo-600 transition duration-300" id="user-dropdown-button">
                   <i class="fas fa-user mr-2"></i>
                   <%= current_user.name %>
