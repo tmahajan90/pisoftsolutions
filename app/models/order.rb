@@ -126,6 +126,21 @@ class Order < ApplicationRecord
   def payment_failed?
     payment_status == 'failed'
   end
+
+  def can_retry_payment?
+    payment_pending? || payment_failed?
+  end
+
+  def payment_timeout?
+    return false unless payment_pending?
+    created_at < 15.minutes.ago
+  end
+
+  def payment_retry_count
+    # This could be stored in a separate field if you want to track retry attempts
+    # For now, we'll use a simple approach
+    0
+  end
   
   private
   
