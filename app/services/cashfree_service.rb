@@ -136,6 +136,35 @@ class CashfreeService
     end
   end
 
+  # Get payments for an order
+  def get_payments_for_order(cf_order_id)
+    Rails.logger.info "Fetching payments for Cashfree order: #{cf_order_id}"
+    
+    begin
+      response = make_request('GET', "/orders/#{cf_order_id}/payments")
+      
+      if response[:success]
+        Rails.logger.info "Cashfree payments fetched successfully"
+        {
+          success: true,
+          payments: response[:data] || []
+        }
+      else
+        Rails.logger.error "Failed to fetch Cashfree payments: #{response[:error]}"
+        {
+          success: false,
+          error: response[:error]
+        }
+      end
+    rescue => e
+      Rails.logger.error "Unexpected error in get_payments_for_order: #{e.class} - #{e.message}"
+      {
+        success: false,
+        error: e.message
+      }
+    end
+  end
+
   # Refund payment
   def refund_payment(payment_id, amount = nil, reason = nil)
     Rails.logger.info "Processing Cashfree refund for payment: #{payment_id}"

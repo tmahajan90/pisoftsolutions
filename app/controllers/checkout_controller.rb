@@ -203,7 +203,12 @@ class CheckoutController < ApplicationController
   end
 
   def payment_callback
+    Rails.logger.info "Payment callback called with params: #{params.inspect}"
+    Rails.logger.info "Looking for order with ID: #{params[:id]}"
+    Rails.logger.info "Orders in database: #{Order.pluck(:id, :status)}"
+    
     @order = Order.find(params[:id])
+    Rails.logger.info "Found order: #{@order.inspect}"
     payment_gateway = @order.payment_gateway || 'razorpay'
     
     # Log the callback for debugging
@@ -275,43 +280,78 @@ class CheckoutController < ApplicationController
   end
 
   def handle_cashfree_callback
-    cashfree_service = CashfreeService.new
+    Rails.logger.info "Starting Cashfree callback handling for order #{@order.id}"
     
-    Rails.logger.info "Cashfree callback params: #{params.inspect}"
+    begin
+      cashfree_service = CashfreeService.new
+      
+      Rails.logger.info "Cashfree callback params: #{params.inspect}"
+      
+      # For redirect callbacks, we need to get order details using the order ID
+      # The payment session ID is stored in payment_gateway_order_id, but we need the actual order ID
+      cashfree_order_id = "order_#{@order.id}"
+      
+      Rails.logger.info "Getting order details for Cashfree order ID: #{cashfree_order_id}"
+      
+      # Get order details from Cashfree using the order ID
+      order_details = cashfree_service.get_order_details(cashfree_order_id)
     
-    # Cashfree callback handling
-    payment_id = params[:payment_id] || params[:cf_payment_id]
-    order_id = params[:order_id] || params[:cf_order_id]
-    signature = params[:signature] || params[:cf_signature]
-    
-    if payment_id && order_id
-      # Verify webhook signature if available
-      if signature
-        verification_result = cashfree_service.verify_webhook_signature(params.to_json, signature)
-        unless verification_result[:success]
-          Rails.logger.error "Cashfree signature verification failed: #{verification_result[:error]}"
+    if order_details[:success]
+      order_data = order_details[:order]
+      Rails.logger.info "Cashfree order details: #{order_data.inspect}"
+      
+      # Check if payment was successful
+      order_status = order_data['order_status']
+      Rails.logger.info "Order status: #{order_status}"
+      
+      if order_status == 'PAID'
+        # For PAID orders, we need to get the payment details separately
+        # The order details don't always include the payment_id directly
+        Rails.logger.info "Order is PAID, getting payment details..."
+        
+        # For PAID orders, use cf_order_id as payment_id
+        # This is a common pattern when the payment details are not readily available
+        cf_order_id = order_data['cf_order_id']
+        if cf_order_id
+          Rails.logger.info "Using cf_order_id as payment_id for order #{@order.id}: #{cf_order_id}"
+          @order.mark_payment_successful(cf_order_id, nil)
+          redirect_to order_path(@order), notice: 'Payment successful! Your order has been confirmed.'
+        else
+          Rails.logger.error "cf_order_id not found in order details for order #{@order.id}"
           @order.mark_payment_failed
           redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
-          return
         end
-      end
-      
-      # Get payment details from Cashfree
-      payment_details = cashfree_service.get_payment_details(payment_id)
-      
-      if payment_details[:success] && payment_details[:payment]['payment_status'] == 'SUCCESS'
-        @order.mark_payment_successful(payment_id, signature)
-        Rails.logger.info "Cashfree payment successful for order #{@order.id}"
-        redirect_to order_path(@order), notice: 'Payment successful! Your order has been confirmed.'
-      else
-        Rails.logger.error "Cashfree payment verification failed for order #{@order.id}"
+      elsif order_status == 'ACTIVE'
+        # Order is active but payment not yet completed
+        Rails.logger.info "Order is ACTIVE - payment session created but payment not completed"
+        Rails.logger.info "User will need to complete payment on Cashfree's hosted page"
+        
+        # Redirect back to payment page to complete the payment
+        redirect_to payment_path(@order), alert: 'Please complete your payment to proceed.'
+      elsif order_status == 'EXPIRED'
+        Rails.logger.info "Order is EXPIRED - payment session has expired"
         @order.mark_payment_failed
-        redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
+        redirect_to payment_path(@order), alert: 'Payment session has expired. Please try again.'
+      elsif order_status == 'CANCELLED'
+        Rails.logger.info "Order is CANCELLED - payment was cancelled"
+        @order.mark_payment_failed
+        redirect_to payment_path(@order), alert: 'Payment was cancelled. Please try again.'
+      else
+        Rails.logger.error "Unknown order status for order #{@order.id}: #{order_status}"
+        @order.mark_payment_failed
+        redirect_to order_path(@order), alert: 'Payment status unknown. Please contact support.'
       end
     else
-      Rails.logger.error "Missing payment parameters in Cashfree callback"
+      Rails.logger.error "Failed to get order details from Cashfree: #{order_details[:error]}"
       @order.mark_payment_failed
-      redirect_to order_path(@order), alert: 'Invalid payment callback. Please contact support.'
+      redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
+    end
+    
+    rescue => e
+      Rails.logger.error "Error in handle_cashfree_callback: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      @order.mark_payment_failed
+      redirect_to order_path(@order), alert: 'An error occurred during payment processing. Please contact support.'
     end
   end
   
