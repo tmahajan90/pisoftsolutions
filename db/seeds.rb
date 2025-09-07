@@ -210,4 +210,8 @@ end
 # Re-enable automatic validity option creation
 Product.skip_default_validity_option_creation = false
 
+# Load features
+puts "\nLoading features..."
+load Rails.root.join('db', 'seeds', 'features.rb')
+
 puts "✅ Setup complete!"

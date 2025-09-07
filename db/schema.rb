@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
+ActiveRecord::Schema[7.1].define(version: 2025_09_07_064936) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -49,6 +49,28 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
     t.index ["contact_status"], name: "index_contacts_on_contact_status"
     t.index ["created_at"], name: "index_contacts_on_created_at"
     t.index ["email"], name: "index_contacts_on_email"
+  end
+
+  create_table "features", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.text "description", null: false
+    t.integer "category", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.decimal "base_price", precision: 10, scale: 2, default: "0.0", null: false
+    t.boolean "featured", default: false
+    t.integer "trial_days"
+    t.string "icon"
+    t.text "pricing_tiers"
+    t.text "features_list"
+    t.text "requirements"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category"], name: "index_features_on_category"
+    t.index ["featured"], name: "index_features_on_featured"
+    t.index ["name"], name: "index_features_on_name", unique: true
+    t.index ["slug"], name: "index_features_on_slug", unique: true
+    t.index ["status"], name: "index_features_on_status"
   end
 
   create_table "offers", force: :cascade do |t|
@@ -102,6 +124,13 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
     t.string "razorpay_order_id"
     t.string "razorpay_payment_id"
     t.string "payment_status"
+    t.string "payment_gateway", default: "razorpay"
+    t.string "payment_gateway_order_id"
+    t.string "payment_gateway_payment_id"
+    t.text "payment_gateway_signature"
+    t.index ["payment_gateway"], name: "index_orders_on_payment_gateway"
+    t.index ["payment_gateway_order_id"], name: "index_orders_on_payment_gateway_order_id"
+    t.index ["payment_gateway_payment_id"], name: "index_orders_on_payment_gateway_payment_id"
     t.index ["user_id"], name: "index_orders_on_user_id"
   end
 
@@ -122,6 +151,35 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
     t.index ["category"], name: "index_products_on_category"
   end
 
+  create_table "subscriptions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "feature_id", null: false
+    t.string "plan_name", null: false
+    t.decimal "price", precision: 10, scale: 2, null: false
+    t.integer "billing_cycle", default: 2, null: false
+    t.integer "status", default: 0, null: false
+    t.boolean "auto_renew", default: true
+    t.integer "usage_limit"
+    t.text "features"
+    t.datetime "started_at"
+    t.datetime "last_billing_date"
+    t.datetime "next_billing_date"
+    t.integer "billing_count", default: 0
+    t.datetime "cancelled_at"
+    t.text "cancellation_reason"
+    t.datetime "suspended_at"
+    t.text "suspension_reason"
+    t.datetime "effective_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auto_renew"], name: "index_subscriptions_on_auto_renew"
+    t.index ["feature_id"], name: "index_subscriptions_on_feature_id"
+    t.index ["next_billing_date"], name: "index_subscriptions_on_next_billing_date"
+    t.index ["status"], name: "index_subscriptions_on_status"
+    t.index ["user_id", "feature_id"], name: "index_subscriptions_on_user_id_and_feature_id"
+    t.index ["user_id"], name: "index_subscriptions_on_user_id"
+  end
+
   create_table "trial_usages", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "product_id", null: false
@@ -131,6 +189,28 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
     t.index ["product_id"], name: "index_trial_usages_on_product_id"
     t.index ["user_id", "product_id"], name: "index_trial_usages_on_user_id_and_product_id", unique: true
     t.index ["user_id"], name: "index_trial_usages_on_user_id"
+  end
+
+  create_table "user_features", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "feature_id", null: false
+    t.bigint "subscription_id"
+    t.integer "status", default: 0, null: false
+    t.boolean "trial_used", default: false
+    t.datetime "trial_started_at"
+    t.datetime "trial_ends_at"
+    t.datetime "expires_at"
+    t.datetime "suspended_at"
+    t.text "suspension_reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_user_features_on_expires_at"
+    t.index ["feature_id"], name: "index_user_features_on_feature_id"
+    t.index ["status"], name: "index_user_features_on_status"
+    t.index ["subscription_id"], name: "index_user_features_on_subscription_id"
+    t.index ["trial_ends_at"], name: "index_user_features_on_trial_ends_at"
+    t.index ["user_id", "feature_id"], name: "index_user_features_on_user_id_and_feature_id", unique: true
+    t.index ["user_id"], name: "index_user_features_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -172,7 +252,12 @@ ActiveRecord::Schema[7.1].define(version: 2025_08_29_134018) do
   add_foreign_key "order_offers", "offers"
   add_foreign_key "order_offers", "orders"
   add_foreign_key "orders", "users"
+  add_foreign_key "subscriptions", "features"
+  add_foreign_key "subscriptions", "users"
   add_foreign_key "trial_usages", "products"
   add_foreign_key "trial_usages", "users"
+  add_foreign_key "user_features", "features"
+  add_foreign_key "user_features", "subscriptions"
+  add_foreign_key "user_features", "users"
   add_foreign_key "validity_options", "products"
 end

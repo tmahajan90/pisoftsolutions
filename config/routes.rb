@@ -66,8 +66,51 @@ Rails.application.routes.draw do
   get 'payment/:id', to: 'checkout#payment', as: 'payment'
   post 'payment/:id/callback', to: 'checkout#payment_callback', as: 'payment_callback'
   
+  # Gateway-specific payment routes
+  get 'payment/:gateway/:id', to: 'checkout#payment', as: 'gateway_payment'
+  get 'payment/:gateway/callback/:id', to: 'checkout#payment_callback', as: 'gateway_payment_callback'
+  post 'payment/:gateway/callback/:id', to: 'checkout#payment_callback'
+  post 'payment/:gateway/webhook', to: 'checkout#payment_webhook', as: 'gateway_payment_webhook'
+  
   # Order routes
   resources :orders, only: [:index, :new, :create, :show]
+  
+  # Feature routes
+  resources :features, only: [:index, :show] do
+    member do
+      post :subscribe
+      post :start_trial
+      post :cancel_subscription
+    end
+    collection do
+      get :my_features
+      get :dashboard
+    end
+  end
+  
+  # Subscription routes
+  resources :subscriptions, only: [:show, :update, :destroy] do
+    member do
+      post :cancel
+      post :suspend
+      post :reactivate
+      post :upgrade
+      post :downgrade
+    end
+  end
+  
+  # Feature-specific routes
+  namespace :whatsapp_marketing do
+    get '/', to: 'whatsapp_marketing#index'
+    get 'campaigns', to: 'whatsapp_marketing#campaigns'
+    post 'campaigns', to: 'whatsapp_marketing#create_campaign'
+    post 'send_message', to: 'whatsapp_marketing#send_message'
+    get 'contacts', to: 'whatsapp_marketing#contacts'
+    post 'import_contacts', to: 'whatsapp_marketing#import_contacts'
+    get 'analytics', to: 'whatsapp_marketing#analytics'
+    get 'templates', to: 'whatsapp_marketing#templates'
+    post 'templates', to: 'whatsapp_marketing#create_template'
+  end
   
   # API endpoints for contact form
   post 'contact/submit', to: 'home#submit_contact'

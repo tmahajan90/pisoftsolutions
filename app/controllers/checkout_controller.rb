@@ -131,27 +131,34 @@ class CheckoutController < ApplicationController
           Rails.logger.info "Offers applied: #{@order.applied_offers.count}"
         end
         
-        # Create Razorpay order
-        Rails.logger.info "Creating Razorpay order for amount: #{@order.final_total}"
-        razorpay_result = @order.create_razorpay_order
+        # Select payment gateway
+        selected_gateway = params[:payment_gateway] || PaymentGatewayConfig.select_gateway_for_order(@order)
+        Rails.logger.info "Selected payment gateway: #{selected_gateway}"
         
-        Rails.logger.info "Razorpay result: #{razorpay_result}"
+        # Create payment order
+        Rails.logger.info "Creating payment order for amount: #{@order.final_total} with gateway: #{selected_gateway}"
+        payment_result = @order.create_payment_order(selected_gateway)
         
-        if razorpay_result[:success]
+        Rails.logger.info "Payment result: #{payment_result}"
+        
+        if payment_result[:success]
           success = true
-          Rails.logger.info "Razorpay order created successfully: #{razorpay_result[:order_id]}"
+          Rails.logger.info "Payment order created successfully: #{payment_result[:order_id]}"
         else
-          Rails.logger.error "Razorpay order creation failed: #{razorpay_result[:error]}"
+          Rails.logger.error "Payment order creation failed: #{payment_result[:error]}"
           
-          # For testing purposes, if Razorpay fails, create a mock order
-          if Rails.env.development? && razorpay_result[:error]&.include?('Authentication failed')
-            Rails.logger.info "Creating mock Razorpay order for testing"
+          # For testing purposes, if payment fails, create a mock order
+          if Rails.env.development? && payment_result[:error]&.include?('Authentication failed')
+            Rails.logger.info "Creating mock payment order for testing"
             mock_order_id = "order_mock_#{@order.id}_#{Time.current.to_i}"
-            @order.update(razorpay_order_id: mock_order_id)
+            @order.update(
+              payment_gateway: selected_gateway,
+              payment_gateway_order_id: mock_order_id
+            )
             success = true
-            Rails.logger.info "Mock Razorpay order created: #{mock_order_id}"
+            Rails.logger.info "Mock payment order created: #{mock_order_id}"
           else
-            # Rollback the transaction if Razorpay order creation fails
+            # Rollback the transaction if payment order creation fails
             raise ActiveRecord::Rollback
           end
         end
@@ -185,22 +192,57 @@ class CheckoutController < ApplicationController
 
   def payment
     @order = Order.find(params[:id])
+    @selected_gateway = @order.payment_gateway || PaymentGatewayConfig.default_gateway
+    
+    # Get configuration for all available gateways
     @razorpay_key = ENV['RAZORPAY_KEY_ID']
+    @cashfree_app_id = ENV['CASHFREE_APP_ID']
+    
+    # Get available payment gateways for selection
+    @available_gateways = PaymentGatewayConfig.available_gateways
   end
 
   def payment_callback
     @order = Order.find(params[:id])
-    razorpay_service = RazorpayService.new
+    payment_gateway = @order.payment_gateway || 'razorpay'
     
     # Log the callback for debugging
-    Rails.logger.info "Payment callback received for order #{@order.id}"
+    Rails.logger.info "Payment callback received for order #{@order.id} with gateway: #{payment_gateway}"
+    
+    # Handle callback based on payment gateway
+    case payment_gateway
+    when 'razorpay'
+      handle_razorpay_callback
+    when 'cashfree'
+      handle_cashfree_callback
+    else
+      Rails.logger.error "Unknown payment gateway: #{payment_gateway}"
+      redirect_to order_path(@order), alert: 'Unknown payment gateway. Please contact support.'
+    end
+  rescue => e
+    Rails.logger.error "Error in payment callback for order #{params[:id]}: #{e.message}"
+    Rails.logger.error e.backtrace.join("\n")
+    
+    if @order
+      @order.mark_payment_failed
+      redirect_to order_path(@order), alert: 'An error occurred during payment processing. Please contact support.'
+    else
+      redirect_to root_path, alert: 'Order not found. Please contact support.'
+    end
+  end
+  
+  private
+
+  def handle_razorpay_callback
+    razorpay_service = RazorpayService.new
+    
     Rails.logger.info "Payment ID: #{params[:razorpay_payment_id]}"
     Rails.logger.info "Order ID: #{params[:razorpay_order_id]}"
     
     # Check if this is a test payment
-    if params[:razorpay_payment_id]&.start_with?('pay_test_') || @order.razorpay_order_id&.start_with?('order_mock_')
+    if params[:razorpay_payment_id]&.start_with?('pay_test_') || @order.payment_gateway_order_id&.start_with?('order_mock_')
       Rails.logger.info "Processing test payment for order #{@order.id}"
-      @order.mark_payment_successful(params[:razorpay_payment_id])
+      @order.mark_payment_successful(params[:razorpay_payment_id], params[:razorpay_signature])
       redirect_to order_path(@order), notice: 'Test payment successful! Your order has been confirmed.'
       return
     end
@@ -217,7 +259,7 @@ class CheckoutController < ApplicationController
       payment_details = razorpay_service.get_payment_details(params[:razorpay_payment_id])
       
       if payment_details[:success] && payment_details[:payment]['status'] == 'captured'
-        @order.mark_payment_successful(params[:razorpay_payment_id])
+        @order.mark_payment_successful(params[:razorpay_payment_id], params[:razorpay_signature])
         Rails.logger.info "Payment successful for order #{@order.id}"
         redirect_to order_path(@order), notice: 'Payment successful! Your order has been confirmed.'
       else
@@ -230,19 +272,48 @@ class CheckoutController < ApplicationController
       @order.mark_payment_failed
       redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
     end
-  rescue => e
-    Rails.logger.error "Error in payment callback for order #{params[:id]}: #{e.message}"
-    Rails.logger.error e.backtrace.join("\n")
+  end
+
+  def handle_cashfree_callback
+    cashfree_service = CashfreeService.new
     
-    if @order
-      @order.mark_payment_failed
-      redirect_to order_path(@order), alert: 'An error occurred during payment processing. Please contact support.'
+    Rails.logger.info "Cashfree callback params: #{params.inspect}"
+    
+    # Cashfree callback handling
+    payment_id = params[:payment_id] || params[:cf_payment_id]
+    order_id = params[:order_id] || params[:cf_order_id]
+    signature = params[:signature] || params[:cf_signature]
+    
+    if payment_id && order_id
+      # Verify webhook signature if available
+      if signature
+        verification_result = cashfree_service.verify_webhook_signature(params.to_json, signature)
+        unless verification_result[:success]
+          Rails.logger.error "Cashfree signature verification failed: #{verification_result[:error]}"
+          @order.mark_payment_failed
+          redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
+          return
+        end
+      end
+      
+      # Get payment details from Cashfree
+      payment_details = cashfree_service.get_payment_details(payment_id)
+      
+      if payment_details[:success] && payment_details[:payment]['payment_status'] == 'SUCCESS'
+        @order.mark_payment_successful(payment_id, signature)
+        Rails.logger.info "Cashfree payment successful for order #{@order.id}"
+        redirect_to order_path(@order), notice: 'Payment successful! Your order has been confirmed.'
+      else
+        Rails.logger.error "Cashfree payment verification failed for order #{@order.id}"
+        @order.mark_payment_failed
+        redirect_to order_path(@order), alert: 'Payment verification failed. Please contact support.'
+      end
     else
-      redirect_to root_path, alert: 'An error occurred during payment processing. Please contact support.'
+      Rails.logger.error "Missing payment parameters in Cashfree callback"
+      @order.mark_payment_failed
+      redirect_to order_path(@order), alert: 'Invalid payment callback. Please contact support.'
     end
   end
-  
-  private
   
   def order_params
     params.require(:order).permit(:user_email)
