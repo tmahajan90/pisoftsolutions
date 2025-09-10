@@ -92,9 +92,21 @@ Rails.application.configure do
   # Skip DNS rebinding protection for the default health check endpoint.
   # config.host_authorization = { exclude: ->(request) { request.path == "/health" } }
 
-  # Domain configuration
+  # Multi-domain configuration for production
+  # Primary domain
   config.hosts << ENV['DOMAIN'] if ENV['DOMAIN'].present?
   config.hosts << "www.#{ENV['DOMAIN']}" if ENV['DOMAIN'].present?
+  
+  # Additional domains (comma-separated)
+  if ENV['ADDITIONAL_DOMAINS'].present?
+    ENV['ADDITIONAL_DOMAINS'].split(',').each do |domain|
+      domain = domain.strip
+      config.hosts << domain
+      # config.hosts << "www.#{domain}" unless domain.start_with?('www.')
+    end
+  end
+  
+  # Local development hosts (only in development)
   config.hosts << "localhost" if Rails.env.development?
   
   # Action Mailer configuration for domain

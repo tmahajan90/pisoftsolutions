@@ -11,8 +11,8 @@ http {
 
     server {
       listen 80;
-      # server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
-      server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
+      # server_name pisoftsolutions.in www.pisoftsolutions.in;
+      server_name 195.250.24.176 pisoftsolutions.in www.pisoftsolutions.in;
 
       # ~2 seconds is often enough for most folks to parse HTML/CSS and
       # retrieve needed images/icons/frames, connections are cheap in
@@ -95,7 +95,7 @@ http {
     # For wa.pisoftsolutions.in (Application 2)
     # server {
     #     listen 82;
-    #     server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
+    #     server_name wa.pisoftsolutions.in;
 
     #     root /app/public;  # Path to your second app's public directory
 
@@ -121,8 +121,8 @@ http {
 
     server {
       listen 443 ssl;
-      # server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
-      server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
+      # server_name pisoftsolutions.in www.pisoftsolutions.in;
+      server_name 195.250.24.176 pisoftsolutions.in www.pisoftsolutions.in;
 
       ssl_certificate /etc/letsencrypt/live/pisoftsolutions.in/fullchain.pem;
       ssl_certificate_key /etc/letsencrypt/live/pisoftsolutions.in/privkey.pem;
@@ -166,7 +166,7 @@ http {
     # SSL configuration for wa.pisoftsolutions.in
     # server {
     #     listen 9443 ssl;
-    #     server_name server_name pisoftsolutions.in www.pisoftsolutions.in;
+    #     server_name wa.pisoftsolutions.in;
 
     #     ssl_certificate /etc/letsencrypt/live/wa.pisoftsolutions.in/fullchain.pem;
     #     ssl_certificate_key /etc/letsencrypt/live/wa.pisoftsolutions.in/privkey.pem;

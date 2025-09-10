@@ -104,4 +104,23 @@ Rails.application.configure do
 
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
+
+  # Multi-domain configuration for development
+  # Primary domain
+  config.hosts << ENV['DOMAIN'] if ENV['DOMAIN'].present?
+  config.hosts << "www.#{ENV['DOMAIN']}" if ENV['DOMAIN'].present?
+  
+  # Additional domains (comma-separated)
+  if ENV['ADDITIONAL_DOMAINS'].present?
+    ENV['ADDITIONAL_DOMAINS'].split(',').each do |domain|
+      domain = domain.strip
+      config.hosts << domain
+      config.hosts << "www.#{domain}" unless domain.start_with?('www.')
+    end
+  end
+  
+  # Local development hosts
+  config.hosts << "localhost"
+  config.hosts << "127.0.0.1"
+  config.hosts << "195.250.24.176"  # Your server IP
 end
