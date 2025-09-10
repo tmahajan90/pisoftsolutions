@@ -24,12 +24,9 @@ services:
           cpus: '0.5'
         reservations:
           memory: 256M
-          cpus: '0.25'
       restart_policy:
         condition: on-failure
-        delay: 10s
         max_attempts: 5
-        window: 300s
     stop_grace_period: 30s
     stop_signal: SIGTERM
     command: >
@@ -104,12 +101,9 @@ services:
           cpus: '0.5'
         reservations:
           memory: 512M
-          cpus: '0.25'
       restart_policy:
         condition: on-failure
-        delay: 10s
         max_attempts: 5
-        window: 300s
     stop_grace_period: 30s
     stop_signal: SIGTERM
     healthcheck:
@@ -123,6 +117,35 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+    networks:
+      - my_network
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx.Dockerfile
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt  # Volume for Certbot certificates
+      - ./scripts:/scripts  # Volume for scripts
+      - ./public:/app/public
+      - public-assets:/app/public/assets
+      # - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"     # HTTPS port
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
 
 volumes:
   postgres_data:
@@ -130,4 +153,6 @@ volumes:
   bundle_cache:
     driver: local
   node_modules_cache:
+    driver: local
+  public-assets:
     driver: local
