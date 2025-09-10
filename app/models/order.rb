@@ -100,6 +100,9 @@ class Order < ApplicationRecord
       payment_status: 'success',
       status: 'paid'
     )
+    
+    # Send payment success email
+    PaymentMailer.payment_success(self).deliver_now
   end
 
   # Legacy method for backward compatibility
@@ -113,6 +116,9 @@ class Order < ApplicationRecord
 
   def mark_payment_failed
     update(payment_status: 'failed')
+    
+    # Send payment failed email
+    PaymentMailer.payment_failed(self).deliver_now
   end
 
   def payment_successful?
@@ -140,6 +146,11 @@ class Order < ApplicationRecord
     # This could be stored in a separate field if you want to track retry attempts
     # For now, we'll use a simple approach
     0
+  end
+
+  def send_payment_reminder
+    return unless payment_pending?
+    PaymentMailer.payment_reminder(self).deliver_now
   end
   
   private

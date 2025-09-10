@@ -37,9 +37,40 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
-
+  config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_caching = false
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.default_url_options = { host: ENV['DOMAIN'] || 'localhost', port: 3000 }
+  
+  # Use Zoho SMTP settings if environment variables are set
+  # if ENV['SMTP_USERNAME'].present? && ENV['SMTP_PASSWORD'].present?
+  #   config.action_mailer.smtp_settings = {
+  #     address: ENV['SMTP_ADDRESS'] || 'smtp.zoho.com',
+  #     port: ENV['SMTP_PORT'] || 587,
+  #     domain: ENV['DOMAIN'] || 'localhost',
+  #     user_name: ENV['SMTP_USERNAME'],
+  #     password: ENV['SMTP_PASSWORD'],
+  #     authentication: 'plain',
+  #     enable_starttls_auto: true
+  #   }
+  # else
+  #   # Fallback to local SMTP for development
+  #   config.action_mailer.smtp_settings = {
+  #     address: 'localhost',
+  #     port: 1025,
+  #     domain: 'localhost'
+  #   }
+  # end
+
+  config.action_mailer.smtp_settings = {
+    address: ENV['SMTP_ADDRESS'] || 'smtp.zoho.com',
+    port: ENV['SMTP_PORT'] || 587,
+    domain: ENV['DOMAIN'] || 'localhost',
+    user_name: ENV['SMTP_USERNAME'],
+    password: ENV['SMTP_PASSWORD'],
+    authentication: 'login',
+    enable_starttls_auto: true
+  }
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

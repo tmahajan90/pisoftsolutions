@@ -25,7 +25,7 @@ CASHFREE_ENVIRONMENT=sandbox  # or 'production'
 CASHFREE_WEBHOOK_SECRET=your_webhook_secret_here
 
 # Base URL for callbacks
-BASE_URL=https://yourdomain.com
+BASE_URL=https://pisoftsolutions.com
 ```
 
 ### 3. Test the Integration
@@ -153,9 +153,9 @@ CASHFREE_SECRET_KEY=your_live_secret_key
 ### 2. Set Up Webhooks
 
 Configure webhook URLs in Cashfree dashboard:
-- **Success URL**: `https://yourdomain.com/payment/cashfree/callback/{order_id}`
-- **Failure URL**: `https://yourdomain.com/payment/cashfree/callback/{order_id}`
-- **Webhook URL**: `https://yourdomain.com/payment/cashfree/webhook`
+- **Success URL**: `https://pisoftsolutions.com/payment/cashfree/callback/{order_id}`
+- **Failure URL**: `https://pisoftsolutions.com/payment/cashfree/callback/{order_id}`
+- **Webhook URL**: `https://pisoftsolutions.com/payment/cashfree/webhook`
 
 ### 3. Test Production Integration
 

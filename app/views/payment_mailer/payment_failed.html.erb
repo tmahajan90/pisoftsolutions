@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Failed - Order #<%= @order.id %></title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .container {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .header p {
+      margin: 10px 0 0 0;
+      opacity: 0.9;
+      font-size: 16px;
+    }
+    .content {
+      padding: 30px;
+    }
+    .order-info {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .order-info h3 {
+      margin: 0 0 15px 0;
+      color: #dc2626;
+      font-size: 18px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+      padding: 5px 0;
+      border-bottom: 1px solid #fecaca;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      font-weight: 600;
+      color: #991b1b;
+    }
+    .info-value {
+      color: #111827;
+      font-weight: 500;
+    }
+    .retry-section {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .retry-section h3 {
+      color: #1e40af;
+      margin: 0 0 15px 0;
+    }
+    .cta-button {
+      display: inline-block;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 10px 5px;
+    }
+    .cta-button.secondary {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+    }
+    .footer {
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 14px;
+    }
+    .footer a {
+      color: #3b82f6;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1>⚠️ Payment Failed</h1>
+      <p>We couldn't process your payment for Order #<%= @order.id %></p>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <p>Dear <%= @user&.name || 'Valued Customer' %>,</p>
+      
+      <p>We're sorry to inform you that your payment for Order #<%= @order.id %> could not be processed successfully. Don't worry - your order is still reserved and you can retry the payment.</p>
+
+      <!-- Order Information -->
+      <div class="order-info">
+        <h3>📋 Order Details</h3>
+        <div class="info-row">
+          <span class="info-label">Order ID:</span>
+          <span class="info-value">#<%= @order.id %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Order Date:</span>
+          <span class="info-value"><%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Amount:</span>
+          <span class="info-value">₹<%= @order.final_total %></span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value"><%= @order.user_email %></span>
+        </div>
+      </div>
+
+      <!-- Retry Payment Section -->
+      <div class="retry-section">
+        <h3>🔄 Complete Your Payment</h3>
+        <p>Your order is still reserved. You can complete your payment using any of the following methods:</p>
+        
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="<%= payment_url(@order) %>" class="cta-button">Retry Payment</a>
+          <a href="<%= contact_url %>" class="cta-button secondary">Contact Support</a>
+        </div>
+      </div>
+
+      <h3>💡 Common Reasons for Payment Failure:</h3>
+      <ul>
+        <li><strong>Insufficient funds</strong> - Please check your account balance</li>
+        <li><strong>Card expired</strong> - Verify your card's expiry date</li>
+        <li><strong>Incorrect details</strong> - Double-check card number, CVV, and billing address</li>
+        <li><strong>Bank restrictions</strong> - Contact your bank if the transaction is blocked</li>
+        <li><strong>Network issues</strong> - Try again in a few minutes</li>
+      </ul>
+
+      <h3>🆘 Need Help?</h3>
+      <p>If you continue to experience issues, our support team is here to help:</p>
+      <ul>
+        <li>Email: <a href="mailto:support@pisoftsolutions.in">support@pisoftsolutions.in</a></li>
+        <li>Phone: Available 24/7 for urgent issues</li>
+        <li>Live Chat: Available on our website</li>
+      </ul>
+
+      <p><strong>Important:</strong> Your order will be automatically cancelled if payment is not completed within 15 minutes. Please complete your payment soon to secure your items.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>
+        <strong>PiSoftSolutions</strong><br>
+        Innovative Software Development & Digital Solutions<br>
+        <a href="mailto:support@pisoftsolutions.in">support@pisoftsolutions.in</a> | 
+        <a href="https://pisoftsolutions.in">pisoftsolutions.in</a>
+      </p>
+      <p style="margin-top: 15px; font-size: 12px; color: #9ca3af;">
+        This is an automated email. Please do not reply to this message.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
