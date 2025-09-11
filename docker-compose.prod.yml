@@ -116,10 +116,35 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx.Dockerfile
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt  # Volume for Certbot certificates
+      - ./scripts:/scripts  # Volume for scripts
+      - ./public:/app/public
+      - public-assets:/app/public/assets
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"     # HTTPS port
+    environment:
+      - RAILS_ENV=${RAILS_ENV:-production}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "1"
+    restart: always
+
 volumes:
   postgres_data:
     driver: local
   bundle_cache:
     driver: local
   node_modules_cache:
+    driver: local
+  public-assets:
     driver: local
