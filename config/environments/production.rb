@@ -26,6 +26,10 @@ Rails.application.configure do
   # Ensure assets are compiled and available
   config.assets.compile = false
   config.assets.digest = true
+  
+  # Enable asset compilation for Tailwind CSS
+  config.assets.css_compressor = :sass
+  config.assets.js_compressor = :terser
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
@@ -106,12 +110,26 @@ Rails.application.configure do
     ENV['ADDITIONAL_DOMAINS'].split(',').each do |domain|
       domain = domain.strip
       config.hosts << domain
-      # config.hosts << "www.#{domain}" unless domain.start_with?('www.')
+      config.hosts << "www.#{domain}" unless domain.start_with?('www.')
     end
   end
   
-  # Local development hosts (only in development)
-  config.hosts << "localhost" if Rails.env.development?
+  # Allow localhost for development and internal requests
+  config.hosts << "localhost"
+  config.hosts << "127.0.0.1"
+  config.hosts << "0.0.0.0"
+  
+  # Allow IP address access (for direct IP access)
+  config.hosts << "195.250.24.176"
+  
+  # Skip host authorization for health checks and internal requests
+  config.host_authorization = { 
+    exclude: ->(request) { 
+      request.path == "/health" || 
+      request.path.start_with?("/.well-known/") ||
+      request.host.match?(/\A\d+\.\d+\.\d+\.\d+\z/) # Allow IP addresses
+    } 
+  }
   
   # Action Mailer configuration for domain
   if ENV['DOMAIN'].present?
