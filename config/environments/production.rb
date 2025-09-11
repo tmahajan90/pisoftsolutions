@@ -24,7 +24,7 @@ Rails.application.configure do
   config.public_file_server.enabled = ENV['RAILS_SERVE_STATIC_FILES'].present?
   
   # Ensure assets are compiled and available
-  config.assets.compile = false
+  config.assets.compile = true  # Enable compilation for Tailwind CSS
   config.assets.digest = true
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
