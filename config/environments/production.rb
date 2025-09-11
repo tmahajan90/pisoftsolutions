@@ -26,10 +26,6 @@ Rails.application.configure do
   # Ensure assets are compiled and available
   config.assets.compile = false
   config.assets.digest = true
-  
-  # Enable asset compilation for Tailwind CSS
-  config.assets.css_compressor = :sass
-  config.assets.js_compressor = :terser
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
