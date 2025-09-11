@@ -9,31 +9,53 @@ class Cart < ApplicationRecord
   
   def total_amount
     cart_items.includes(:product).sum do |item|
-      price = item.validity_price || item.product.price
+      price = item.validity_price || item.product.default_validity_option&.price || 0
       item.quantity * price
     end
   end
   
   def add_product(product, quantity = 1, validity_type = nil, validity_duration = nil, validity_price = nil)
-    cart_item = cart_items.find_or_initialize_by(product: product)
-    cart_item.quantity = (cart_item.quantity || 0) + quantity
+    # Find existing cart item with the same product AND validity options
+    cart_item = cart_items.find_by(
+      product: product,
+      validity_type: validity_type,
+      validity_duration: validity_duration,
+      validity_price: validity_price
+    )
     
-    # Update validity information if provided
-    if validity_type.present?
-      cart_item.validity_type = validity_type
-      cart_item.validity_duration = validity_duration
-      cart_item.validity_price = validity_price
+    if cart_item
+      # If cart item exists with same validity options, increase quantity
+      cart_item.quantity += quantity
+      cart_item.save
+    else
+      # Create new cart item with the validity options
+      cart_item = cart_items.create!(
+        product: product,
+        quantity: quantity,
+        validity_type: validity_type,
+        validity_duration: validity_duration,
+        validity_price: validity_price
+      )
     end
-    
-    cart_item.save
   end
   
-  def remove_product(product)
-    cart_items.find_by(product: product)&.destroy
+  def remove_product(product, validity_type = nil, validity_duration = nil, validity_price = nil)
+    cart_item = cart_items.find_by(
+      product: product,
+      validity_type: validity_type,
+      validity_duration: validity_duration,
+      validity_price: validity_price
+    )
+    cart_item&.destroy
   end
   
-  def update_quantity(product, quantity)
-    cart_item = cart_items.find_by(product: product)
+  def update_quantity(product, quantity, validity_type = nil, validity_duration = nil, validity_price = nil)
+    cart_item = cart_items.find_by(
+      product: product,
+      validity_type: validity_type,
+      validity_duration: validity_duration,
+      validity_price: validity_price
+    )
     if cart_item
       if quantity <= 0
         cart_item.destroy

@@ -9,6 +9,7 @@ class Order < ApplicationRecord
   validates :total_amount, presence: true, numericality: { greater_than: 0 }
   validates :status, presence: true, inclusion: { in: %w[pending paid shipped delivered cancelled] }
   validates :payment_status, inclusion: { in: %w[pending success failed], allow_nil: true }
+  validates :payment_gateway, inclusion: { in: %w[razorpay cashfree] }
   
   scope :recent, -> { order(created_at: :desc) }
   
@@ -60,28 +61,64 @@ class Order < ApplicationRecord
   end
 
   # Payment methods
-  def create_razorpay_order
-    razorpay_service = RazorpayService.new
-    result = razorpay_service.create_order(final_total, 'INR', "order_#{id}")
+  def create_payment_order(gateway = 'razorpay')
+    payment_service = PaymentService.new(gateway)
+    
+    order_meta = {
+      order_id: "order_#{id}",
+      receipt: "receipt_#{id}_#{Time.current.to_i}",
+      customer_id: user&.id,
+      customer_name: user&.name || 'Customer',
+      customer_email: user_email,
+      customer_phone: user&.phone,
+      return_url: build_payment_url("/payment/#{gateway}/callback/#{id}"),
+      notify_url: build_payment_url("/payment/#{gateway}/webhook")
+    }
+    
+    result = payment_service.create_order(total_amount, 'INR', order_meta)
     
     if result[:success]
-      update(razorpay_order_id: result[:order_id])
+      update(
+        payment_gateway: gateway,
+        payment_gateway_order_id: result[:payment_session_id] || result[:order_id]
+      )
       result
     else
       result
     end
   end
 
-  def mark_payment_successful(payment_id)
+  # Legacy method for backward compatibility
+  def create_razorpay_order
+    create_payment_order('razorpay')
+  end
+
+  def mark_payment_successful(payment_id, signature = nil)
     update(
-      razorpay_payment_id: payment_id,
+      payment_gateway_payment_id: payment_id,
+      payment_gateway_signature: signature,
       payment_status: 'success',
       status: 'paid'
     )
+    
+    # Send payment success email
+    # PaymentMailer.payment_success(self).deliver_now
+  end
+
+  # Legacy method for backward compatibility
+  def razorpay_payment_id
+    payment_gateway_payment_id
+  end
+
+  def razorpay_order_id
+    payment_gateway_order_id
   end
 
   def mark_payment_failed
     update(payment_status: 'failed')
+    
+    # Send payment failed email
+    # PaymentMailer.payment_failed(self).deliver_now
   end
 
   def payment_successful?
@@ -95,8 +132,43 @@ class Order < ApplicationRecord
   def payment_failed?
     payment_status == 'failed'
   end
+
+  def can_retry_payment?
+    payment_pending? || payment_failed?
+  end
+
+  def payment_timeout?
+    return false unless payment_pending?
+    created_at < 15.minutes.ago
+  end
+
+  def payment_retry_count
+    # This could be stored in a separate field if you want to track retry attempts
+    # For now, we'll use a simple approach
+    0
+  end
+
+  def send_payment_reminder
+    return unless payment_pending?
+    # PaymentMailer.payment_reminder(self).deliver_now
+  end
   
   private
+  
+  def build_payment_url(path)
+    # Try to get the base URL from environment or construct it
+    if ENV['BASE_URL'].present?
+      base_url = ENV['BASE_URL']
+    else
+      # For Docker environments, use the host from the request or default
+      host = ENV['HOST'] || 'localhost:3000'
+      base_url = Rails.application.routes.url_helpers.root_url(host: host)
+    end
+    
+    base_url = base_url.chomp('/') # Remove trailing slash if present
+    path = path.start_with?('/') ? path : "/#{path}" # Ensure path starts with /
+    "#{base_url}#{path}"
+  end
   
   def update_total_amount
     update(total_amount: final_total)

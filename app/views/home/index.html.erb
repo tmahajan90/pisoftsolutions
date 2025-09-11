@@ -17,7 +17,7 @@
         <div class="mt-8 flex items-center space-x-6">
           <div class="flex items-center">
             <i class="fas fa-phone text-indigo-600 mr-2"></i>
-            <span class="text-gray-700">+1 (555) 123-4567</span>
+            <span class="text-gray-700">+91 (797) 334-7442</span>
           </div>
           <div class="flex items-center">
             <i class="fas fa-clock text-indigo-600 mr-2"></i>
@@ -94,7 +94,7 @@
           <!-- Product Image -->
           <div class="relative">
             <div class="h-48 bg-gradient-to-br from-<%= product.color %>-500 to-<%= product.color %>-600 flex items-center justify-center">
-              <i class="<%= product.image_url %> text-6xl text-white"></i>
+              <i class="<%= product_icon(product) %> text-6xl text-white"></i>
             </div>
             
             <!-- Badge -->
@@ -133,29 +133,39 @@
             
             <!-- Price -->
             <div class="mb-4">
-              <div class="flex items-baseline">
+              <div class="flex flex-col">
                 <% 
-                  # Get the appropriate price to display
-                  display_price = if product.get_validity_options.any?
-                    # Use the default validity option price, or the first one if no default
-                    default_option = product.default_validity_option || product.get_validity_options.first
-                    default_option&.price
-                  else
-                    # Use the product's base price if no validity options exist
-                    product.price
-                  end
+                  # Get the default validity option for pricing display
+                  default_option = product.default_validity_option || product.get_validity_options.first
+                  if default_option %>
+                  <div class="flex items-baseline space-x-2">
+                    <span class="text-2xl font-bold text-<%= product.color %>-600">₹<%= default_option.price.to_i %></span>
+                    <% if default_option.has_discount? %>
+                      <span class="text-lg text-gray-500 line-through">₹<%= default_option.original_price.to_i %></span>
+                    <% end %>
+                  </div>
                   
-                  # Ensure we have a reasonable price (not 1.0 unless it's actually intended)
-                  display_price = product.price if display_price == 1.0 && product.price != 1.0
-                %>
-                <span class="text-2xl font-bold text-<%= product.color %>-600">₹<%= display_price %></span>
-                <span class="text-sm text-gray-500 ml-2">Starting from</span>
+                  <div class="flex items-center text-sm text-gray-500 mt-1">
+                    <span><%= default_option.label %> Plan</span>
+                  </div>
+                  
+                  <% if default_option.has_discount? %>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                        <i class="fas fa-tag mr-1"></i>
+                        Save <%= default_option.discount_percentage %>% (₹<%= default_option.savings_amount.to_i %>)
+                      </span>
+                    </div>
+                  <% end %>
+                <% else %>
+                  <div class="flex items-baseline">
+                    <span class="text-2xl font-bold text-gray-400">Price TBD</span>
+                  </div>
+                  <div class="flex items-center text-sm text-gray-500 mt-1">
+                    <span>Contact for pricing</span>
+                  </div>
+                <% end %>
               </div>
-              <% if product.original_price && product.original_price > product.price %>
-                <div class="flex items-center text-xs text-green-600 font-semibold mt-1">
-                  <span>Save ₹<%= (product.original_price - product.price).to_f %></span>
-                </div>
-              <% end %>
             </div>
             
             <!-- Validity -->

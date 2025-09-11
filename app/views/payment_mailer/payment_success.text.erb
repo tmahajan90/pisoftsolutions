@@ -1,0 +1,67 @@
+🎉 PAYMENT SUCCESSFUL - ORDER CONFIRMED
+
+Dear <%= @user&.name || 'Valued Customer' %>,
+
+Great news! Your payment has been successfully processed and your order is now confirmed. Thank you for choosing PiSoftSolutions!
+
+📋 ORDER DETAILS
+================
+Order ID: #<%= @order.id %>
+Order Date: <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+Payment ID: <%= @order.payment_gateway_payment_id %>
+Email: <%= @order.user_email %>
+
+🛍️ YOUR PRODUCTS
+================
+<% @order_items.each do |item| %>
+• <%= item.product.name %>
+  Description: <%= item.product.description %>
+  Quantity: <%= item.quantity %>
+  <% if item.validity_type.present? %>
+  Validity: <%= item.validity_display %>
+  <% end %>
+  Price: ₹<%= item.subtotal %>
+  
+<% end %>
+
+<% if @applied_offers.any? %>
+🎁 APPLIED OFFERS
+=================
+<% @applied_offers.each do |offer| %>
+• <%= offer.name %>: -₹<%= offer.calculate_discount(@order.subtotal) %>
+<% end %>
+
+<% end %>
+💰 ORDER SUMMARY
+================
+Subtotal: ₹<%= @order.subtotal %>
+<% if @order.total_discount > 0 %>
+Discount: -₹<%= @order.total_discount %>
+<% end %>
+Tax: ₹0.00
+Shipping: FREE
+--------------------------------
+TOTAL PAID: ₹<%= @order.final_total %>
+
+🚀 WHAT'S NEXT?
+===============
+1. Access Credentials: You'll receive your product access credentials within 24 hours at this email address.
+
+2. Setup & Onboarding: Our support team will reach out to help you get started with your new software.
+
+3. 24/7 Support: Our technical support team is available around the clock to assist you.
+
+View your order details: <%= order_url(@order) %>
+
+If you have any questions about your order, please don't hesitate to contact our support team.
+
+Best regards,
+PiSoftSolutions Team
+
+---
+PiSoftSolutions
+Innovative Software Development & Digital Solutions
+Email: support@pisoftsolutions.in
+Website: https://pisoftsolutions.in
+
+This is an automated email. Please do not reply to this message.

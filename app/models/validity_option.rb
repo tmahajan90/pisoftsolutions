@@ -5,9 +5,23 @@ class ValidityOption < ApplicationRecord
   validates :duration_type, presence: true, inclusion: { in: %w[days months years lifetime] }
   validates :duration_value, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validates :price, presence: true, numericality: { greater_than: 0 }
+  validates :original_price, presence: true, numericality: { greater_than: 0 }
   validates :label, presence: true
+  validate :only_one_default_per_product, if: :is_default?
+  validate :original_price_greater_than_or_equal_to_price
   
   scope :ordered, -> { order(:sort_order, :duration_value) }
+  scope :sorted_by_duration, -> { 
+    order(
+      Arel.sql("CASE duration_type 
+        WHEN 'days' THEN 1 
+        WHEN 'months' THEN 2 
+        WHEN 'years' THEN 3 
+        WHEN 'lifetime' THEN 4 
+        ELSE 5 END"),
+      :duration_value
+    ) 
+  }
   scope :default, -> { where(is_default: true) }
   scope :active, -> { where(active: true) }
   scope :inactive, -> { where(active: false) }
@@ -37,5 +51,36 @@ class ValidityOption < ApplicationRecord
     return "Lifetime" if duration_type == 'lifetime'
     return "1 Day Trial" if trial?
     "#{duration_value} #{duration_type.capitalize}"
+  end
+  
+  def discount_percentage
+    return 0 if original_price.nil? || original_price <= price
+    ((original_price - price) / original_price * 100).round
+  end
+  
+  def has_discount?
+    original_price > price
+  end
+  
+  def savings_amount
+    original_price - price
+  end
+  
+  private
+  
+  def only_one_default_per_product
+    # Check if there's already another default option for this product
+    existing_default = product.validity_options.where(is_default: true)
+    existing_default = existing_default.where.not(id: id) if persisted?
+    
+    if existing_default.exists?
+      errors.add(:is_default, "only one validity option can be set as default per product")
+    end
+  end
+  
+  def original_price_greater_than_or_equal_to_price
+    if original_price.present? && price.present? && original_price < price
+      errors.add(:original_price, "must be greater than or equal to price")
+    end
   end
 end

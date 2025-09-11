@@ -44,7 +44,7 @@
                 <% order.order_items.includes(:product).each do |order_item| %>
                   <div class="flex items-center space-x-4 p-3 border border-gray-200 rounded-lg">
                     <div class="w-12 h-12 bg-gradient-to-br from-<%= order_item.product.color %>-500 to-<%= order_item.product.color %>-600 rounded-lg flex items-center justify-center">
-                      <i class="<%= order_item.product.image_url %> text-lg text-white"></i>
+                      <i class="<%= order_item.product.image_url.present? ? order_item.product.image_url.strip : 'fas fa-box' %> text-lg text-white"></i>
                     </div>
                     
                     <div class="flex-1">

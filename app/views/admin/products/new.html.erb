@@ -15,7 +15,8 @@
     </div>
     
     <div class="p-6">
-      <%= form_with model: [:admin, @product], local: true, class: "space-y-6" do |form| %>
+              <%= form_with model: [:admin, @product], local: true, class: "space-y-6" do |form| %>
+
         <% if @product.errors.any? %>
           <div class="bg-red-50 border border-red-200 rounded-md p-4">
             <div class="flex">
@@ -68,14 +69,12 @@
           <div class="space-y-4">
             <h4 class="text-lg font-medium text-gray-900">Pricing & Stock</h4>
             
-            <div>
-              <%= form.label :price, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "0.00" %>
-            </div>
-            
-            <div>
-              <%= form.label :original_price, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.number_field :original_price, step: 0.01, min: 0, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "Original price (optional)" %>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div class="flex items-center">
+                <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                <span class="text-sm text-blue-800 font-medium">Pricing Information:</span>
+              </div>
+              <p class="text-sm text-blue-700 mt-1">Product pricing is now managed through Validity Options below. Each validity option can have its own price and original price.</p>
             </div>
             
             <div>
@@ -96,8 +95,43 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <%= form.label :color, class: "block text-sm font-medium text-gray-700 mb-1" %>
-              <%= form.text_field :color, class: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500", placeholder: "e.g., Red, Blue, Black" %>
+              <%= form.label :color, "Product Color", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center">
+                  <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                  <span class="text-sm text-blue-800 font-medium">Single Color Selection:</span>
+                </div>
+                <p class="text-sm text-blue-700 mt-1">Select one color for this product. This color will be used for the product theme and buttons.</p>
+              </div>
+              
+              <div class="space-y-3">
+                <!-- Available Colors -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Select Color</label>
+                  <div class="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-4">
+                    <% Product.available_colors.each do |color_key, color_data| %>
+                      <div class="flex items-center">
+                        <%= radio_button_tag "product[color]", color_key.to_s, false, 
+                            id: "color_#{color_key.to_s.parameterize}", 
+                            class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300" %>
+                        <label for="color_<%= color_key.to_s.parameterize %>" class="ml-2 text-sm text-gray-700 flex items-center">
+                          <span class="w-4 h-4 rounded-full mr-2 border border-gray-300 bg-<%= color_data[:css_class] %>-500"></span>
+                          <%= color_data[:name] %>
+                        </label>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+                
+                <!-- Selected Color Preview -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Selected Color</label>
+                  <div class="flex items-center min-h-10 p-2 border border-gray-200 rounded-lg" id="selected-color-preview">
+                    <span class="text-sm text-gray-500 italic">No color selected</span>
+                  </div>
+                </div>
+              </div>
             </div>
             
             <div>
@@ -117,11 +151,16 @@
               <span class="font-medium text-blue-900">1-Day Trial Settings</span>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Trial Price (₹)</label>
                 <input type="number" name="product[validity_options_attributes][0][price]" step="0.01" min="0" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="1.00">
                 <p class="text-xs text-gray-500 mt-1">Set to ₹1 for nominal charge or ₹0 for free trial</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Trial Original Price (₹)</label>
+                <input type="number" name="product[validity_options_attributes][0][original_price]" step="0.01" min="0" value="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="1.00">
+                <p class="text-xs text-gray-500 mt-1">Usually same as trial price</p>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Trial Label</label>
@@ -137,6 +176,67 @@
             <input type="hidden" name="product[validity_options_attributes][0][duration_type]" value="days">
             <input type="hidden" name="product[validity_options_attributes][0][duration_value]" value="1">
             <input type="hidden" name="product[validity_options_attributes][0][sort_order]" value="0">
+          </div>
+        </div>
+        
+        <!-- Product Features -->
+        <div class="border-t pt-6">
+          <h4 class="text-lg font-medium text-gray-900 mb-4">Product Features</h4>
+          
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+            <div class="flex items-center">
+              <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+              <span class="text-sm text-blue-800 font-medium">Features Management:</span>
+            </div>
+            <p class="text-sm text-blue-700 mt-1">Add features for this product. Features will be displayed to customers on the product page.</p>
+          </div>
+          
+          <div class="space-y-4">
+            <!-- Available Features -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Available Features</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <% available_features = [
+                  'Easy Setup & Integration',
+                  '24/7 Technical Support',
+                  '99.9% Uptime Guarantee',
+                  'Regular Updates',
+                  'Analytics & Reporting',
+                  'Mobile Responsive',
+                  'API Access',
+                  'Custom Branding',
+                  'Multi-language Support',
+                  'Advanced Security',
+                  'Cloud Storage',
+                  'Real-time Sync',
+                  'Team Collaboration',
+                  'Data Backup',
+                  'Performance Monitoring'
+                ] %>
+                
+                <% available_features.each do |feature| %>
+                  <div class="flex items-center">
+                    <%= check_box_tag "product[features][]", feature, false, 
+                        id: "feature_#{feature.parameterize}", 
+                        class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+                    <label for="feature_<%= feature.parameterize %>" class="ml-2 text-sm text-gray-700">
+                      <%= feature %>
+                    </label>
+                  </div>
+                <% end %>
+              </div>
+            </div>
+            
+            <!-- Custom Features -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Custom Features</label>
+              <div class="space-y-2" id="custom-features-container">
+                <!-- Custom features will be added here dynamically -->
+              </div>
+              <button type="button" onclick="addCustomFeature()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                <i class="fas fa-plus mr-1"></i>Add Custom Feature
+              </button>
+            </div>
           </div>
         </div>
         
@@ -158,7 +258,7 @@
             
             <template id="validity-option-template">
               <div class="validity-option border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Duration Type</label>
                     <select name="product[validity_options_attributes][INDEX][duration_type]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -173,12 +273,19 @@
                     <input type="number" name="product[validity_options_attributes][INDEX][duration_value]" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+                    <input type="text" name="product[validity_options_attributes][INDEX][label]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30 Days">
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
                     <input type="number" name="product[validity_options_attributes][INDEX][price]" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="999.00">
                   </div>
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
-                    <input type="text" name="product[validity_options_attributes][INDEX][label]" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="30 Days">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Original Price (₹)</label>
+                    <input type="number" name="product[validity_options_attributes][INDEX][original_price]" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="1999.00">
+                    <p class="text-xs text-gray-500 mt-1">Leave empty or same as price if no discount</p>
                   </div>
                 </div>
                 <div class="mt-3 flex items-center justify-between">
@@ -196,36 +303,6 @@
           </div>
         </div>
         
-        <script>
-          let validityOptionIndex = 1;
-          
-          function addValidityOption() {
-            const container = document.getElementById('validity-options-container');
-            const template = document.getElementById('validity-option-template');
-            const clone = template.content.cloneNode(true);
-            
-            // Replace INDEX with actual index
-            clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
-              input.name = input.name.replace(/INDEX/g, validityOptionIndex);
-            });
-            
-            container.appendChild(clone);
-            validityOptionIndex++;
-          }
-          
-          function removeValidityOption(button) {
-            const optionDiv = button.closest('.validity-option');
-            const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
-            destroyInput.value = '1';
-            optionDiv.style.display = 'none';
-          }
-          
-          // No need to add default option since trial is already added
-          // document.addEventListener('DOMContentLoaded', function() {
-          //   addValidityOption();
-          // });
-        </script>
-        
         <!-- Form Actions -->
         <div class="border-t pt-6 flex justify-end space-x-3">
           <%= link_to "Cancel", admin_products_path, class: "bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md font-medium" %>
@@ -235,3 +312,113 @@
     </div>
   </div>
 </div>
+
+<script>
+  let validityOptionIndex = 1;
+  
+            // Define all functions globally first, before DOM ready
+          window.addCustomFeature = function() {
+            const container = document.getElementById('custom-features-container');
+            if (!container) {
+              console.error('custom-features-container not found');
+              return;
+            }
+            
+            // Remove any "no features" message
+            const noFeaturesMsg = container.querySelector('.text-gray-500.italic');
+            if (noFeaturesMsg) {
+              noFeaturesMsg.remove();
+            }
+            
+            const newFeatureDiv = document.createElement('div');
+            newFeatureDiv.className = 'flex items-center space-x-2 custom-feature-item';
+            newFeatureDiv.innerHTML = `
+              <input type="text" name="product[features][]" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                     placeholder="Enter custom feature"
+                     required>
+              <button type="button" onclick="removeCustomFeature(this)" class="text-red-600 hover:text-red-800">
+                <i class="fas fa-times"></i>
+              </button>
+            `;
+            container.appendChild(newFeatureDiv);
+            
+            // Focus on the new input
+            const newInput = newFeatureDiv.querySelector('input');
+            newInput.focus();
+          };
+  
+            window.removeCustomFeature = function(button) {
+            const featureItem = button.closest('.custom-feature-item');
+            if (featureItem) {
+              featureItem.remove();
+              
+              // Check if no custom features remain and show message
+              const container = document.getElementById('custom-features-container');
+              const remainingFeatures = container.querySelectorAll('.custom-feature-item');
+              if (remainingFeatures.length === 0) {
+                const noFeaturesMsg = document.createElement('div');
+                noFeaturesMsg.className = 'text-sm text-gray-500 italic';
+                noFeaturesMsg.textContent = 'No custom features added yet. Click "Add Custom Feature" to add one.';
+                container.appendChild(noFeaturesMsg);
+              }
+            }
+          };
+  
+  // Make all functions globally available
+  window.addValidityOption = function() {
+    const container = document.getElementById('validity-options-container');
+    const template = document.getElementById('validity-option-template');
+    const clone = template.content.cloneNode(true);
+    
+    // Replace INDEX with actual index
+    clone.querySelectorAll('[name*="INDEX"]').forEach(input => {
+      input.name = input.name.replace(/INDEX/g, validityOptionIndex);
+    });
+    
+    container.appendChild(clone);
+    validityOptionIndex++;
+  };
+  
+  window.removeValidityOption = function(button) {
+    const optionDiv = button.closest('.validity-option');
+    const destroyInput = optionDiv.querySelector('[name*="_destroy"]');
+    destroyInput.value = '1';
+    optionDiv.style.display = 'none';
+  };
+  
+  // Color management functions for single color selection
+  window.updateSelectedColorPreview = function() {
+    const previewContainer = document.getElementById('selected-color-preview');
+    if (!previewContainer) return;
+    
+    // Get the selected color
+    const selectedRadio = document.querySelector('input[name="product[color]"]:checked');
+    
+    if (selectedRadio) {
+      const colorValue = selectedRadio.value;
+      const colorLabel = selectedRadio.nextElementSibling.textContent.trim();
+      const colorClass = colorValue.replace(/[^a-zA-Z0-9]/g, '-');
+      
+      previewContainer.innerHTML = `
+        <span class="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-${colorClass}-100 text-${colorClass}-800 border border-${colorClass}-200">
+          <span class="w-4 h-4 rounded-full mr-2 bg-${colorClass}-500"></span>
+          ${colorLabel}
+        </span>
+      `;
+    } else {
+      previewContainer.innerHTML = '<span class="text-sm text-gray-500 italic">No color selected</span>';
+    }
+  };
+  
+  // Add event listeners when DOM is loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to color radio buttons
+    const colorRadios = document.querySelectorAll('input[name="product[color]"]');
+    colorRadios.forEach(radio => {
+      radio.addEventListener('change', updateSelectedColorPreview);
+    });
+  });
+  
+  
+</script>

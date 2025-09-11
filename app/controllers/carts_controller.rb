@@ -45,7 +45,11 @@ class CartsController < ApplicationController
   
   def remove_item
     product = Product.find(params[:product_id])
-    @cart.remove_product(product)
+    validity_type = params[:validity_type]
+    validity_duration = params[:validity_duration]&.to_i
+    validity_price = params[:validity_price]&.to_f
+    
+    @cart.remove_product(product, validity_type, validity_duration, validity_price)
     
     render json: { 
       success: true, 
@@ -58,8 +62,11 @@ class CartsController < ApplicationController
   def update_quantity
     product = Product.find(params[:product_id])
     quantity = params[:quantity]&.to_i || 0
+    validity_type = params[:validity_type]
+    validity_duration = params[:validity_duration]&.to_i
+    validity_price = params[:validity_price]&.to_f
     
-    @cart.update_quantity(product, quantity)
+    @cart.update_quantity(product, quantity, validity_type, validity_duration, validity_price)
     
     render json: { 
       success: true, 

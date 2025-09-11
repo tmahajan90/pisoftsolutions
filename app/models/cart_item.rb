@@ -5,7 +5,7 @@ class CartItem < ApplicationRecord
   validates :quantity, presence: true, numericality: { greater_than: 0 }
   
   def subtotal
-    quantity * (validity_price || product.price)
+    quantity * (validity_price || product.default_validity_option&.price || 0)
   end
   
   def validity_display

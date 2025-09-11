@@ -3,7 +3,7 @@
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center">
       <h1 class="text-3xl font-bold mb-2">Complete Payment</h1>
-      <p class="text-lg opacity-90">Secure payment powered by Razorpay</p>
+      <p class="text-lg opacity-90">Secure payment powered by <%= ENV['DEFAULT_PAYMENT_GATEWAY']&.capitalize %> </p>
     </div>
   </div>
 </section>
@@ -41,10 +41,54 @@
             </div>
           </div>
 
-          <!-- Razorpay Payment Button -->
+          <!-- Payment Gateway Selection -->
+          <div class="mb-6 p-4 bg-white border border-gray-200 rounded-lg">
+            <h3 class="font-semibold text-gray-900 mb-4">Choose Payment Method</h3>
+            <div class="space-y-3">
+              <% PaymentGatewayConfig.available_gateways.each do |gateway_key, config| %>
+                <label class="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <input type="radio" name="payment_gateway" value="<%= gateway_key %>" 
+                         class="sr-only payment-gateway-radio" 
+                         <%= 'checked' if gateway_key.to_s == @selected_gateway || (gateway_key.to_s == PaymentGatewayConfig.default_gateway && @selected_gateway.blank?) %>>
+                  <div class="flex items-center w-full">
+                    <div class="w-5 h-5 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center payment-gateway-indicator">
+                      <div class="w-2 h-2 bg-indigo-600 rounded-full payment-gateway-dot hidden"></div>
+                    </div>
+                    <div class="flex-1 payment-gateway-content">
+                      <div class="flex items-center justify-between">
+                        <div>
+                          <h4 class="font-medium text-gray-900"><%= config[:name] %></h4>
+                          <p class="text-sm text-gray-600">
+                            <% if gateway_key == :razorpay %>
+                              Credit/Debit Cards, UPI, Net Banking, Wallets
+                            <% elsif gateway_key == :cashfree %>
+                              Credit/Debit Cards, UPI, Net Banking, Wallets
+                            <% end %>
+                          </p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <% if gateway_key == :razorpay %>
+                            <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                              <i class="fas fa-credit-card text-indigo-600"></i>
+                            </div>
+                          <% elsif gateway_key == :cashfree %>
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <i class="fas fa-university text-blue-600"></i>
+                            </div>
+                          <% end %>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              <% end %>
+            </div>
+          </div>
+
+          <!-- Payment Button -->
           <div class="text-center">
-            <% if @order.razorpay_order_id&.start_with?('order_mock_') %>
-              <!-- Test Mode Payment Button -->
+            <!-- Test Mode Payment Button (for mock orders) -->
+            <% if @order.payment_gateway_order_id&.start_with?('order_mock_') %>
               <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                 <div class="flex items-center">
                   <i class="fas fa-exclamation-triangle text-yellow-600 mr-2"></i>
@@ -56,12 +100,12 @@
                 <i class="fas fa-play mr-2"></i>Test Payment ₹<%= @order.final_total %>
               </button>
             <% else %>
-              <!-- Real Razorpay Payment Button -->
-              <button id="rzp-button" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 px-6 rounded-lg font-semibold text-lg transition duration-300 transform hover:scale-105 cursor-pointer hover:cursor-pointer">
+              <!-- Dynamic Payment Button -->
+              <button id="payment-button" onclick="paymentButtonClick()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 px-6 rounded-lg font-semibold text-lg transition duration-300 transform hover:scale-105 cursor-pointer">
                 <i class="fas fa-lock mr-2"></i>Pay ₹<%= @order.final_total %>
               </button>
             <% end %>
-            <p class="text-xs text-gray-500 mt-2">Secure payment powered by Razorpay</p>
+            <p class="text-xs text-gray-500 mt-2" id="payment-provider-text">Secure payment powered by <span id="selected-gateway-name"><%= ENV['DEFAULT_PAYMENT_GATEWAY']&.capitalize %></span></p>
           </div>
 
           <!-- Payment Methods Info -->
@@ -92,7 +136,7 @@
             <% @order.order_items.includes(:product).each do |order_item| %>
               <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                 <div class="w-12 h-12 bg-gradient-to-br from-<%= order_item.product.color %>-500 to-<%= order_item.product.color %>-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i class="<%= order_item.product.image_url %> text-lg text-white"></i>
+                  <i class="<%= product_icon(order_item.product) %> text-lg text-white"></i>
                 </div>
                 
                 <div class="flex-1 min-w-0">
@@ -158,9 +202,39 @@
   </div>
 </section>
 
-<!-- Razorpay Script -->
+<!-- Payment Gateway Styles -->
+<style>
+  .payment-gateway-radio:checked + .payment-gateway-indicator {
+    border-color: #4F46E5;
+  }
+  
+  .payment-gateway-radio:checked + .payment-gateway-indicator .payment-gateway-dot {
+    display: block;
+  }
+  
+  .payment-gateway-radio:checked ~ .payment-gateway-content {
+    background-color: #F0F9FF;
+    border-color: #3B82F6;
+  }
+</style>
+
+<!-- Payment Gateway Scripts -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js" onload="console.log('Cashfree SDK loaded')" onerror="console.error('Failed to load Cashfree SDK')"></script>
+
 <script>
+  // Payment gateway configuration
+  const paymentConfig = {
+    razorpay: {
+      key: "<%= @razorpay_key %>",
+      orderId: "<%= @order.payment_gateway_order_id %>"
+    },
+    cashfree: {
+      appId: "<%= @cashfree_app_id %>",
+      paymentSessionId: "<%= @order.payment_gateway_order_id %>"
+    }
+  };
+
   // Test payment button handler
   document.getElementById('test-payment-button')?.addEventListener('click', function(e) {
     e.preventDefault();
@@ -177,9 +251,9 @@
       form.action = '<%= payment_callback_path(@order) %>';
       
       var fields = {
-        'razorpay_payment_id': 'pay_test_' + Date.now(),
-        'razorpay_order_id': '<%= @order.razorpay_order_id %>',
-        'razorpay_signature': 'test_signature_' + Date.now(),
+        'payment_id': 'pay_test_' + Date.now(),
+        'order_id': '<%= @order.payment_gateway_order_id %>',
+        'signature': 'test_signature_' + Date.now(),
         'authenticity_token': '<%= form_authenticity_token %>'
       };
       
@@ -196,48 +270,107 @@
     }, 2000); // 2 second delay to simulate processing
   });
 
-  // Real Razorpay payment button handler
-  document.getElementById('rzp-button')?.addEventListener('click', function(e) {
-    e.preventDefault();
+  // Gateway selection handlers
+  document.querySelectorAll('.payment-gateway-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+      updatePaymentButton();
+      updateGatewayName();
+    });
+  });
+
+  function updatePaymentButton() {
+    const selectedGateway = document.querySelector('input[name="payment_gateway"]:checked').value;
+    const button = document.getElementById('payment-button');
     
-    // Disable button to prevent double clicks
-    this.disabled = true;
-    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+    if (selectedGateway === 'razorpay') {
+      button.className = 'w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white py-4 px-6 rounded-lg font-semibold text-lg transition duration-300 transform hover:scale-105 cursor-pointer';
+    } else if (selectedGateway === 'cashfree') {
+      button.className = 'w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white py-4 px-6 rounded-lg font-semibold text-lg transition duration-300 transform hover:scale-105 cursor-pointer';
+    }
+  }
+
+  function updateGatewayName() {
+    const selectedGateway = document.querySelector('input[name="payment_gateway"]:checked').value;
+    const gatewayNameElement = document.getElementById('selected-gateway-name');
+    
+    if (selectedGateway === 'razorpay') {
+      gatewayNameElement.textContent = 'Razorpay';
+    } else if (selectedGateway === 'cashfree') {
+      gatewayNameElement.textContent = 'Cashfree';
+    }
+  }
+
+  // Main payment button handler - using direct assignment for debugging
+  window.paymentButtonClick = function() {
+    console.log('Payment button clicked!');
+    
+    const selectedRadio = document.querySelector('input[name="payment_gateway"]:checked');
+    console.log('Selected radio:', selectedRadio);
+    if (!selectedRadio) {
+      console.error('No payment gateway selected');
+      alert('Please select a payment method');
+      return;
+    }
+    
+    const selectedGateway = selectedRadio.value;
+    console.log('Payment button clicked, selected gateway:', selectedGateway);
+    
+    // Check if we need to create payment order first
+    const orderId = '<%= @order.payment_gateway_order_id %>';
+    console.log('Current order payment ID:', orderId);
+    
+    if (!orderId || orderId === '') {
+      console.log('No payment order exists, submitting form to process payment');
+      // Create a form to submit to process payment
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '/checkout/process_payment';
+      
+      const gatewayInput = document.createElement('input');
+      gatewayInput.type = 'hidden';
+      gatewayInput.name = 'payment_gateway';
+      gatewayInput.value = selectedGateway;
+      
+      const tokenInput = document.createElement('input');
+      tokenInput.type = 'hidden';
+      tokenInput.name = 'authenticity_token';
+      tokenInput.value = '<%= form_authenticity_token %>';
+      
+      form.appendChild(gatewayInput);
+      form.appendChild(tokenInput);
+      document.body.appendChild(form);
+      form.submit();
+      return;
+    }
+    
+    if (selectedGateway === 'razorpay') {
+      console.log('Handling Razorpay payment');
+      handleRazorpayPayment();
+    } else if (selectedGateway === 'cashfree') {
+      console.log('Handling Cashfree payment');
+      handleCashfreePayment();
+    } else {
+      console.error('Unknown gateway selected:', selectedGateway);
+      alert('Please select a payment method');
+    }
+  };
+
+  function handleRazorpayPayment() {
+    const button = document.getElementById('payment-button');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
     
     var options = {
-      "key": "<%= @razorpay_key %>",
+      "key": paymentConfig.razorpay.key,
       "amount": "<%= (@order.final_total * 100).to_i %>",
       "currency": "INR",
       "name": "Pisoft Solutions",
       "description": "Order #<%= @order.id %>",
       "image": "https://your-logo-url.com/logo.png",
-      "order_id": "<%= @order.razorpay_order_id %>",
+      "order_id": paymentConfig.razorpay.orderId,
       "handler": function (response) {
-        // Show success message
         showMessage('Payment successful! Redirecting...', 'success');
-        
-        // Create a form to submit payment details
-        var form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '<%= payment_callback_path(@order) %>';
-        
-        var fields = {
-          'razorpay_payment_id': response.razorpay_payment_id,
-          'razorpay_order_id': response.razorpay_order_id,
-          'razorpay_signature': response.razorpay_signature,
-          'authenticity_token': '<%= form_authenticity_token %>'
-        };
-        
-        for (var key in fields) {
-          var input = document.createElement('input');
-          input.type = 'hidden';
-          input.name = key;
-          input.value = fields[key];
-          form.appendChild(input);
-        }
-        
-        document.body.appendChild(form);
-        form.submit();
+        submitPaymentResponse('razorpay', response);
       },
       "prefill": {
         "name": "<%= @order.user&.name || '' %>",
@@ -253,10 +386,7 @@
       },
       "modal": {
         "ondismiss": function() {
-          // Re-enable button when modal is dismissed
-          var button = document.getElementById('rzp-button');
-          button.disabled = false;
-          button.innerHTML = '<i class="fas fa-lock mr-2"></i>Pay ₹<%= @order.final_total %>';
+          resetPaymentButton();
         }
       }
     };
@@ -265,15 +395,92 @@
     
     rzp.on('payment.failed', function (response) {
       showMessage('Payment failed: ' + response.error.description, 'error');
-      
-      // Re-enable button
-      var button = document.getElementById('rzp-button');
-      button.disabled = false;
-      button.innerHTML = '<i class="fas fa-lock mr-2"></i>Pay ₹<%= @order.final_total %>';
+      resetPaymentButton();
     });
     
     rzp.open();
-  });
+  }
+
+  function handleCashfreePayment() {
+    const button = document.getElementById('payment-button');
+    button.disabled = true;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+    
+    // Debug logging
+    console.log('Cashfree payment initiated');
+    console.log('Payment Session ID:', paymentConfig.cashfree.paymentSessionId);
+    console.log('Cashfree object available:', typeof Cashfree);
+    
+    if (typeof Cashfree === 'undefined') {
+      showMessage('Cashfree SDK not loaded. Please refresh the page.', 'error');
+      resetPaymentButton();
+      return;
+    }
+    
+    try {
+      // Initialize Cashfree SDK according to official documentation
+      const cashfree = Cashfree({
+        mode: "sandbox" // Use sandbox for testing
+      });
+      
+      console.log('Cashfree SDK initialized:', cashfree);
+      
+      // Use the official checkout method as per documentation
+      const checkoutOptions = {
+        paymentSessionId: paymentConfig.cashfree.paymentSessionId,
+        redirectTarget: "_self" // Opens in same tab
+      };
+      
+      console.log('Opening Cashfree checkout with options:', checkoutOptions);
+      
+      // Open Cashfree checkout
+      cashfree.checkout(checkoutOptions);
+      
+    } catch (error) {
+      console.error('Cashfree payment error:', error);
+      showMessage('Payment failed: ' + (error.message || 'Unknown error'), 'error');
+      resetPaymentButton();
+    }
+  }
+
+  function submitPaymentResponse(gateway, response) {
+    var form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '<%= payment_callback_path(@order) %>';
+    
+    var fields = {
+      'payment_gateway': gateway,
+      'authenticity_token': '<%= form_authenticity_token %>'
+    };
+    
+    // Add gateway-specific fields
+    if (gateway === 'razorpay') {
+      fields['razorpay_payment_id'] = response.razorpay_payment_id;
+      fields['razorpay_order_id'] = response.razorpay_order_id;
+      fields['razorpay_signature'] = response.razorpay_signature;
+    } else if (gateway === 'cashfree') {
+      fields['cashfree_payment_id'] = response.paymentId;
+      fields['cashfree_order_id'] = response.orderId;
+      fields['cashfree_signature'] = response.signature;
+    }
+    
+    for (var key in fields) {
+      var input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = key;
+      input.value = fields[key];
+      form.appendChild(input);
+    }
+    
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function resetPaymentButton() {
+    const button = document.getElementById('payment-button');
+    button.disabled = false;
+    button.innerHTML = '<i class="fas fa-lock mr-2"></i>Pay ₹<%= @order.final_total %>';
+  }
   
   function showMessage(message, type) {
     // Create message element
@@ -296,4 +503,37 @@
       }
     }, 5000);
   }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, initializing payment page');
+    const paymentButton = document.getElementById('payment-button');
+    console.log('Payment button found:', !!paymentButton);
+    console.log('Payment button element:', paymentButton);
+    console.log('Available gateways:', "#{PaymentGatewayConfig ? PaymentGatewayConfig.available_gateways : 'Not available'}");
+    
+    // Ensure a gateway is selected by default
+    const selectedRadio = document.querySelector('input[name="payment_gateway"]:checked');
+    if (!selectedRadio) {
+      console.log('No gateway selected, selecting first available');
+      const firstRadio = document.querySelector('input[name="payment_gateway"]');
+      if (firstRadio) {
+        firstRadio.checked = true;
+      }
+    }
+    
+    // Check which gateway is selected
+    const currentSelected = document.querySelector('input[name="payment_gateway"]:checked');
+    console.log('Selected gateway radio:', currentSelected ? currentSelected.value : 'none');
+    
+    // Test button click
+    if (paymentButton) {
+      console.log('Payment button found and ready');
+      console.log('Button onclick attribute:', paymentButton.getAttribute('onclick'));
+      console.log('paymentButtonClick function available:', typeof window.paymentButtonClick);
+    }
+    
+    updatePaymentButton();
+    updateGatewayName();
+  });
 </script>

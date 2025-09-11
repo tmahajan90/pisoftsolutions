@@ -34,6 +34,42 @@
           <p class="text-xl text-gray-600 leading-relaxed"><%= @product.description %></p>
         </div>
         
+        <!-- Main Pricing Display -->
+        <div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+          <% 
+            default_option = @product.default_validity_option || @product.get_validity_options.first
+            if default_option %>
+            <div class="flex items-center justify-between">
+              <div class="flex flex-col">
+                <div class="flex items-baseline space-x-3">
+                  <span class="text-4xl font-bold text-<%= @product.color %>-600">₹<%= default_option.price.to_i %></span>
+                  <% if default_option.has_discount? %>
+                    <span class="text-2xl text-gray-500 line-through">₹<%= default_option.original_price.to_i %></span>
+                  <% end %>
+                </div>
+                <div class="flex items-center space-x-2 mt-2">
+                  <span class="text-lg text-gray-600"><%= default_option.label %> Plan</span>
+                  <% if default_option.has_discount? %>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                      <i class="fas fa-tag mr-1"></i>
+                      Save <%= default_option.discount_percentage %>% (₹<%= default_option.savings_amount.to_i %>)
+                    </span>
+                  <% end %>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-gray-500">Starting from</div>
+                <div class="text-xs text-gray-400">One-time payment</div>
+              </div>
+            </div>
+          <% else %>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-gray-400">Price TBD</div>
+              <div class="text-gray-500 mt-2">Contact us for pricing information</div>
+            </div>
+          <% end %>
+        </div>
+        
         <!-- Rating -->
         <div class="flex items-center space-x-4">
           <div class="flex text-yellow-400 text-xl">
@@ -52,7 +88,7 @@
         <div class="text-center lg:text-left">
           <div class="relative">
             <div class="w-80 h-80 bg-gradient-to-br from-<%= @product.color %>-500 to-<%= @product.color %>-600 rounded-3xl flex items-center justify-center mx-auto lg:mx-0 shadow-2xl">
-              <i class="<%= @product.image_url %> text-9xl text-white"></i>
+              <i class="<%= product_icon(@product) %> text-9xl text-white"></i>
             </div>
             <!-- Badge -->
             <div class="absolute -top-4 -right-4">
@@ -87,25 +123,26 @@
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">Choose Your Plan</h3>
                             <% 
-                              # Get the appropriate price to display
+                              # Get the appropriate price to display from validity options
                               display_price = if @product.get_validity_options.any?
                                 # Use the default validity option price, or the first one if no default
                                 default_option = @product.default_validity_option || @product.get_validity_options.first
                                 default_option&.price
                               else
-                                # Use the product's base price if no validity options exist
-                                @product.price
+                                # Fallback to 0 if no validity options exist
+                                0
                               end
-                              
-                              # Ensure we have a reasonable price (not 1.0 unless it's actually intended)
-                              display_price = @product.price if display_price == 1.0 && @product.price != 1.0
                             %>
-                            <div class="text-sm text-gray-500">Starting from ₹<%= display_price %></div>
+                            <div class="text-sm text-gray-500">Choose your plan below</div>
           </div>
           
           <!-- Plan Dropdown -->
           <div class="relative mb-4">
             <select id="plan-select" class="validity-select w-full appearance-none bg-gray-50 border-2 border-gray-200 rounded-lg px-4 py-3 pr-10 text-lg font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-<%= @product.color %>-500 focus:border-<%= @product.color %>-500 transition-all duration-300">
+              <% 
+                default_option = @product.default_validity_option || @product.get_validity_options.first
+                default_index = @product.get_validity_options.index(default_option)
+              %>
               <% @product.get_validity_options.each_with_index do |option, index| %>
                 <% 
                   is_trial = option.duration_type == 'days' && option.duration_value == 1
@@ -116,19 +153,23 @@
                         data-validity="<%= option.duration_type %>" 
                         data-duration="<%= option.duration_value %>" 
                         data-price="<%= option.price %>"
+                        data-original-price="<%= option.original_price %>"
                         data-label="<%= option.label %>"
                         data-trial="<%= is_trial %>"
                         data-can-use-trial="<%= can_use_trial %>"
                         data-trial-used="<%= trial_used %>"
-                        <%= 'selected' if index == 0 %>>
-                  <%= option.label %> - ₹<%= option.price %>
+                        <%= 'selected' if index == default_index %>>
+                  <%= option.label %> - ₹<%= option.price.to_i %>
+                  <% if option.has_discount? %>
+                    (was ₹<%= option.original_price.to_i %> - Save <%= option.discount_percentage %>%)
+                  <% end %>
                   <% if is_trial %>
                     <% if can_use_trial %>
                       (Available)
                     <% else %>
                       (Already Used)
                     <% end %>
-                  <% elsif option.lifetime? %>
+                  <% elsif option.duration_type == 'lifetime' %>
                     (Best Value)
                   <% end %>
                 </option>
@@ -147,18 +188,29 @@
                   <i class="fas fa-clock text-lg text-<%= @product.color %>-600" id="plan-icon"></i>
                 </div>
                 <div>
-                  <h4 class="text-lg font-bold text-gray-900" id="plan-name"><%= @product.get_validity_options.first&.label %></h4>
+                  <% default_option = @product.default_validity_option || @product.get_validity_options.first %>
+                  <h4 class="text-lg font-bold text-gray-900" id="plan-name"><%= default_option&.label %></h4>
                   <p class="text-sm text-gray-600" id="plan-description">
-                    <% if @product.get_validity_options.first&.lifetime? %>
+                    <% if default_option&.lifetime? %>
                       Unlimited access forever
                     <% else %>
-                      Full access for <%= @product.get_validity_options.first&.duration_value %> <%= @product.get_validity_options.first&.duration_type %>
+                      Full access for <%= default_option&.duration_value %> <%= default_option&.duration_type %>
                     <% end %>
                   </p>
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-2xl font-bold text-<%= @product.color %>-600" id="plan-price">₹<%= @product.get_validity_options.first&.price %></div>
+                <div class="flex items-center justify-end gap-2">
+                  <div class="text-2xl font-bold text-<%= @product.color %>-600" id="plan-price">₹<%= default_option&.price %></div>
+                  <% if default_option&.has_discount? %>
+                    <div class="text-lg text-gray-500 line-through" id="plan-original-price">₹<%= default_option&.original_price %></div>
+                  <% end %>
+                </div>
+                <% if default_option&.has_discount? %>
+                  <div class="text-xs text-green-600 font-semibold" id="plan-savings">
+                    Save <%= default_option&.discount_percentage %>% (₹<%= default_option&.savings_amount %>)
+                  </div>
+                <% end %>
                 <div class="text-xs text-gray-500">One-time payment</div>
               </div>
             </div>
@@ -197,32 +249,44 @@
         <!-- Key Features -->
         <div class="bg-white rounded-xl p-6 shadow-lg">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Easy Setup & Integration</span>
+          <% if @product.features_list.any? %>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <% @product.features_list.each do |feature| %>
+                <div class="flex items-center">
+                  <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                  <span class="text-gray-700"><%= feature %></span>
+                </div>
+              <% end %>
             </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">24/7 Technical Support</span>
+          <% else %>
+            <!-- Default features if none are set -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Easy Setup & Integration</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">24/7 Technical Support</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">99.9% Uptime Guarantee</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Regular Updates</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Analytics & Reporting</span>
+              </div>
+              <div class="flex items-center">
+                <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                <span class="text-gray-700">Mobile Responsive</span>
+              </div>
             </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">99.9% Uptime Guarantee</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Regular Updates</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Analytics & Reporting</span>
-            </div>
-            <div class="flex items-center">
-              <i class="fas fa-check-circle text-green-500 mr-3"></i>
-              <span class="text-gray-700">Mobile Responsive</span>
-            </div>
-          </div>
+          <% end %>
         </div>
       </div>
     </div>
@@ -305,7 +369,7 @@
         <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
           <div class="relative">
             <div class="h-32 bg-gradient-to-br from-<%= product.color %>-500 to-<%= product.color %>-600 flex items-center justify-center">
-              <i class="<%= product.image_url %> text-4xl text-white"></i>
+              <i class="<%= product_icon(product) %> text-4xl text-white"></i>
             </div>
             <div class="absolute top-2 left-2">
               <span class="bg-<%= get_badge_color(product.badge) %>-100 text-<%= get_badge_color(product.badge) %>-800 text-xs font-semibold px-2 py-1 rounded-full"><%= product.badge %></span>
@@ -323,7 +387,18 @@
               <span class="text-sm text-gray-600 ml-2">(<%= product.rating %>)</span>
             </div>
             <div class="flex items-center justify-between mb-3">
-                                  <span class="text-xl font-bold text-<%= product.color %>-600">₹<%= product.get_validity_options.first&.price %></span>
+              <% default_option = product.default_validity_option || product.get_validity_options.first %>
+              <div class="flex flex-col">
+                <div class="flex items-baseline space-x-1">
+                  <span class="text-xl font-bold text-<%= product.color %>-600">₹<%= default_option&.price&.to_i || 0 %></span>
+                  <% if default_option&.has_discount? %>
+                    <span class="text-sm text-gray-500 line-through">₹<%= default_option.original_price.to_i %></span>
+                  <% end %>
+                </div>
+                <% if default_option&.has_discount? %>
+                  <span class="text-xs text-green-600 font-semibold">Save <%= default_option.discount_percentage %>%</span>
+                <% end %>
+              </div>
               <span class="text-xs text-gray-500">Starting from</span>
             </div>
             <button onclick="window.location.href='<%= product_detail_path(product) %>'" class="w-full bg-<%= product.color %>-600 hover:bg-<%= product.color %>-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition duration-300">
@@ -362,6 +437,7 @@
   type: vo.duration_type, 
   duration: vo.duration_value, 
   price: vo.price,
+  original_price: vo.original_price,
   trial: vo.trial?,
   can_use_trial: current_user&.can_use_trial_for?(@product) || !current_user,
   trial_used: current_user&.has_used_trial_for?(@product)

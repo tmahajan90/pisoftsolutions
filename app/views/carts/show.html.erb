@@ -20,10 +20,14 @@
             
             <div class="space-y-6">
               <% @cart_items.each do |cart_item| %>
-                <div class="cart-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg" data-product-id="<%= cart_item.product.id %>">
+                <div class="cart-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg" 
+                     data-product-id="<%= cart_item.product.id %>"
+                     data-validity-type="<%= cart_item.validity_type %>"
+                     data-validity-duration="<%= cart_item.validity_duration %>"
+                     data-validity-price="<%= cart_item.validity_price %>">
                   <!-- Product Image -->
                   <div class="w-20 h-20 bg-gradient-to-br from-<%= cart_item.product.color %>-500 to-<%= cart_item.product.color %>-600 rounded-lg flex items-center justify-center">
-                    <i class="<%= cart_item.product.image_url %> text-3xl text-white"></i>
+                    <i class="<%= product_icon(cart_item.product) %> text-3xl text-white"></i>
                   </div>
                   
                   <!-- Product Details -->
@@ -31,11 +35,15 @@
                     <h3 class="text-lg font-semibold text-gray-900"><%= cart_item.product.name %></h3>
                     <p class="text-sm text-gray-600"><%= cart_item.product.description %></p>
                     <div class="flex items-center mt-2">
-                      <span class="text-lg font-bold text-<%= cart_item.product.color %>-600">₹<%= cart_item.validity_price || cart_item.product.price %></span>
-                      <% if cart_item.validity_price.blank? && cart_item.product.original_price && cart_item.product.original_price > cart_item.product.price %>
-                        <span class="text-sm text-gray-500 line-through ml-2">₹<%= cart_item.product.original_price %></span>
-                        <span class="text-sm text-green-600 font-semibold ml-2">Save ₹<%= cart_item.product.original_price - cart_item.product.price %></span>
-                      <% end %>
+                      <span class="text-lg font-bold text-<%= cart_item.product.color %>-600">₹<%= cart_item.validity_price || cart_item.product.default_validity_option&.price || 0 %></span>
+                      <% 
+                        if cart_item.validity_price.blank?
+                          default_option = cart_item.product.default_validity_option || cart_item.product.validity_options.first
+                          if default_option && default_option.has_discount? %>
+                            <span class="text-sm text-gray-500 line-through ml-2">₹<%= default_option.original_price %></span>
+                            <span class="text-sm text-green-600 font-semibold ml-2">Save ₹<%= default_option.savings_amount %></span>
+                          <% end
+                        end %>
                       <% if cart_item.validity_type.present? %>
                         <span class="text-xs text-gray-500 ml-2">(<%= cart_item.validity_display %>)</span>
                       <% end %>
@@ -44,17 +52,32 @@
                   
                   <!-- Quantity Controls -->
                   <div class="flex items-center space-x-2">
-                    <button class="quantity-btn w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition duration-200 cursor-pointer <%= 'opacity-50 cursor-not-allowed' if cart_item.quantity <= 1 %>" data-product-id="<%= cart_item.product.id %>" data-change="-1" <%= 'disabled' if cart_item.quantity <= 1 %>>
+                    <button class="quantity-btn w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition duration-200 cursor-pointer <%= 'opacity-50 cursor-not-allowed' if cart_item.quantity <= 1 %>" 
+                            data-product-id="<%= cart_item.product.id %>" 
+                            data-validity-type="<%= cart_item.validity_type %>"
+                            data-validity-duration="<%= cart_item.validity_duration %>"
+                            data-validity-price="<%= cart_item.validity_price %>"
+                            data-change="-1" 
+                            <%= 'disabled' if cart_item.quantity <= 1 %>>
                       <i class="fas fa-minus text-gray-600"></i>
                     </button>
                     <span class="w-12 text-center font-semibold quantity-display"><%= cart_item.quantity %></span>
-                    <button class="quantity-btn w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition duration-200 cursor-pointer" data-product-id="<%= cart_item.product.id %>" data-change="1">
+                    <button class="quantity-btn w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition duration-200 cursor-pointer" 
+                            data-product-id="<%= cart_item.product.id %>" 
+                            data-validity-type="<%= cart_item.validity_type %>"
+                            data-validity-duration="<%= cart_item.validity_duration %>"
+                            data-validity-price="<%= cart_item.validity_price %>"
+                            data-change="1">
                       <i class="fas fa-plus text-gray-600"></i>
                     </button>
                   </div>
                   
                   <!-- Remove Button -->
-                  <button class="remove-item-btn text-red-500 hover:text-red-700 transition duration-200 cursor-pointer" data-product-id="<%= cart_item.product.id %>">
+                  <button class="remove-item-btn text-red-500 hover:text-red-700 transition duration-200 cursor-pointer" 
+                          data-product-id="<%= cart_item.product.id %>"
+                          data-validity-type="<%= cart_item.validity_type %>"
+                          data-validity-duration="<%= cart_item.validity_duration %>"
+                          data-validity-price="<%= cart_item.validity_price %>">
                     <i class="fas fa-trash text-lg"></i>
                   </button>
                 </div>
@@ -81,6 +104,61 @@
                 <span class="font-semibold order-summary-subtotal">₹<%= @cart.total_amount %></span>
               </div>
               
+              <% 
+                # Calculate total discount
+                total_discount = 0
+                total_original_amount = 0
+                discount_items = []
+                
+                @cart_items.each do |cart_item|
+                  # Find the validity option for this cart item
+                  validity_option = nil
+                  
+                  if cart_item.validity_price.present?
+                    # Cart item has custom validity price, find matching validity option
+                    validity_option = cart_item.product.validity_options.find do |option|
+                      option.duration_type == cart_item.validity_type && 
+                      option.duration_value == cart_item.validity_duration
+                    end
+                  else
+                    # Use default validity option
+                    validity_option = cart_item.product.default_validity_option || cart_item.product.validity_options.first
+                  end
+                  
+                  # Calculate discount if validity option has discount
+                  if validity_option && validity_option.has_discount?
+                    item_discount = validity_option.savings_amount * cart_item.quantity
+                    item_original = validity_option.original_price * cart_item.quantity
+                    total_discount += item_discount
+                    total_original_amount += item_original
+                    discount_items << {
+                      product: cart_item.product.name,
+                      validity: validity_option.label,
+                      quantity: cart_item.quantity,
+                      discount: item_discount,
+                      original: item_original
+                    }
+                  end
+                end
+              %>
+              
+              <% if total_discount > 0 %>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-green-800 font-semibold">Total Discount</span>
+                    <span class="text-green-800 font-bold">-₹<%= total_discount.to_i %></span>
+                  </div>
+                  <div class="text-xs text-green-700">
+                    <% discount_items.each do |item| %>
+                      <div class="flex justify-between">
+                        <span><%= item[:product] %> (<%= item[:validity] %>) × <%= item[:quantity] %></span>
+                        <span>-₹<%= item[:discount].to_i %></span>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+              
               <div class="flex justify-between">
                 <span class="text-gray-600">Tax</span>
                 <span class="font-semibold">₹0.00</span>
@@ -92,10 +170,21 @@
               </div>
               
               <div class="border-t border-gray-200 pt-4">
+                <% if total_discount > 0 %>
+                  <div class="flex justify-between text-sm text-gray-500 mb-2">
+                    <span>Original Total</span>
+                    <span class="line-through">₹<%= total_original_amount.to_i %></span>
+                  </div>
+                <% end %>
                 <div class="flex justify-between">
                   <span class="text-xl font-bold text-gray-900">Total</span>
                   <span class="text-xl font-bold text-indigo-600 order-summary-total">₹<%= @cart.total_amount %></span>
                 </div>
+                <% if total_discount > 0 %>
+                  <div class="text-sm text-green-600 font-semibold text-right mt-1">
+                    You save ₹<%= total_discount.to_i %>!
+                  </div>
+                <% end %>
               </div>
             </div>
             

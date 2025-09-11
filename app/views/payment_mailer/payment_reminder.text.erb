@@ -1,0 +1,51 @@
+⏰ PAYMENT REMINDER - ORDER #<%= @order.id %>
+
+Dear <%= @user&.name || 'Valued Customer' %>,
+
+This is a friendly reminder that your payment for Order #<%= @order.id %> is still pending. Complete your payment now to secure your items!
+
+<% if @time_remaining && @time_remaining != "expired" %>
+⏰ TIME REMAINING: <%= @time_remaining %>
+<% elsif @time_remaining == "expired" %>
+⚠️ PAYMENT OVERDUE: Your payment is overdue. Please complete it immediately to avoid order cancellation.
+<% end %>
+
+📋 ORDER DETAILS
+================
+Order ID: #<%= @order.id %>
+Order Date: <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+Total Amount: ₹<%= @order.final_total %>
+Email: <%= @order.user_email %>
+
+💳 COMPLETE YOUR PAYMENT
+========================
+Secure your order with our trusted payment partners. Choose from multiple payment options:
+
+• Credit/Debit Cards
+• UPI
+• Net Banking
+• Digital Wallets
+
+Complete Payment: <%= payment_url(@order) %>
+
+🔒 100% Secure Payment • SSL Encrypted • Powered by <%= ENV['DEFAULT_PAYMENT_GATEWAY']&.capitalize || 'Razorpay' %>
+
+🆘 NEED HELP?
+=============
+If you're experiencing any issues with payment, our support team is here to help:
+• Email: support@pisoftsolutions.in
+• Live Chat: Available on our website
+• Phone Support: Available 24/7 for urgent issues
+
+IMPORTANT: Your order will be automatically cancelled if payment is not completed within 15 minutes. Don't miss out on your selected items!
+
+Best regards,
+PiSoftSolutions Team
+
+---
+PiSoftSolutions
+Innovative Software Development & Digital Solutions
+Email: support@pisoftsolutions.in
+Website: https://pisoftsolutions.in
+
+This is an automated email. Please do not reply to this message.

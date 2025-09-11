@@ -1,11 +1,15 @@
 class Product < ApplicationRecord
+  include ColorEnum
+  
   has_many :cart_items, dependent: :destroy
   has_many :order_items, dependent: :destroy
   has_many :validity_options, dependent: :destroy
   has_many :trial_usages, dependent: :destroy
   
+  # Class-level flag to disable automatic validity option creation during seeding
+  class_attribute :skip_default_validity_option_creation, default: false
+  
   validates :name, presence: true
-  validates :price, presence: true, numericality: { greater_than: 0 }
   validates :stock, presence: true, numericality: { greater_than_or_equal_to: 0 }
   
   scope :in_stock, -> { where('stock > 0') }
@@ -19,13 +23,61 @@ class Product < ApplicationRecord
   # Accept nested attributes for validity options
   accepts_nested_attributes_for :validity_options, allow_destroy: true, reject_if: :all_blank
   
+  # Callback to ensure only one default validity option
+  after_save :ensure_single_default_validity_option
+  
   # Serialize validity options (for backward compatibility during migration)
   serialize :validity_options, coder: JSON
   
-  def discount_percentage
-    return 0 if original_price.nil? || original_price <= price
-    ((original_price - price) / original_price * 100).round
+  # Serialize features as JSON array
+  serialize :features, coder: JSON, default: []
+  
+  # Color is stored as single string, no serialization needed
+  
+  # Ensure features is always an array
+  before_save :ensure_features_array
+  
+  # Ensure colors is always an array
+  before_save :ensure_colors_array
+  
+  # Ensure at least one validity option exists
+  after_save :ensure_default_validity_option
+  
+  # Override features= to ensure proper array handling
+  def features=(value)
+    if value.is_a?(Array)
+      # Filter out empty strings and ensure unique values
+      cleaned_features = value.reject(&:blank?).uniq
+      super(cleaned_features)
+    elsif value.is_a?(String)
+      # Handle case where value might be a JSON string
+      begin
+        parsed = JSON.parse(value)
+        final_value = parsed.is_a?(Array) ? parsed : [value]
+        super(final_value)
+      rescue JSON::ParserError
+        super([value])
+      end
+    else
+      super(value)
+    end
   end
+  
+  # Override color= to ensure proper string handling
+  def color=(value)
+    if value.is_a?(Array)
+      # Take the first non-blank color from the array
+      first_color = value.reject(&:blank?).first
+      super(first_color || 'blue')
+    elsif value.is_a?(String)
+      # Use the string value directly
+      super(value.presence || 'blue')
+    else
+      super(value.to_s.presence || 'blue')
+    end
+  end
+  
+  # Price methods removed - pricing is now handled by ValidityOptions
   
   def in_stock?
     stock > 0
@@ -56,11 +108,11 @@ class Product < ApplicationRecord
 
   
   def get_validity_options
-    validity_options.active.ordered
+    validity_options.active.sorted_by_duration
   end
   
   def default_validity_option
-    validity_options.default.first || validity_options.ordered.first
+    validity_options.default.first || validity_options.sorted_by_duration.first
   end
   
   # Trial-related methods
@@ -86,5 +138,100 @@ class Product < ApplicationRecord
   
   def users_who_used_trial
     User.joins(:trial_usages).where(trial_usages: { product_id: id })
+  end
+  
+  # Feature management methods
+  def add_feature(feature)
+    self.features ||= []
+    feature = feature.to_s.strip
+    self.features << feature unless feature.blank? || self.features.include?(feature)
+  end
+  
+  def remove_feature(feature)
+    self.features ||= []
+    self.features.delete(feature.to_s)
+  end
+  
+  def has_feature?(feature)
+    return false if self.features.blank?
+    self.features.include?(feature.to_s)
+  end
+  
+  def features_list
+    return [] if self.features.blank?
+    self.features.is_a?(Array) ? self.features : []
+  end
+  
+  def colors_list
+    return [] if self.color.blank?
+    # color is now a single string, return as array for compatibility
+    [self.color]
+  end
+  
+  def primary_color
+    colors_list.first
+  end
+  
+  private
+  
+  def ensure_features_array
+    # Ensure features is always an array
+    Rails.logger.debug "ensure_features_array called, current features: #{self.features.inspect} (class: #{self.features.class})"
+    
+    if self.features.nil?
+      Rails.logger.debug "Features is nil, setting to empty array"
+      self.features = []
+    elsif !self.features.is_a?(Array)
+      Rails.logger.debug "Features is not an array, converting to array"
+      self.features = [self.features].compact
+    else
+      Rails.logger.debug "Features is already an array: #{self.features.inspect}"
+    end
+  end
+  
+  def ensure_colors_array
+    # Ensure color is always a valid string
+    Rails.logger.debug "ensure_colors_array called, current color: #{self.color.inspect} (class: #{self.color.class})"
+    
+    if self.color.nil? || self.color.blank?
+      Rails.logger.debug "Color is nil or blank, setting to default"
+      self.color = 'blue'
+    elsif !self.color.is_a?(String)
+      Rails.logger.debug "Color is not a string, converting to string"
+      self.color = self.color.to_s
+    else
+      Rails.logger.debug "Color is already a string: #{self.color.inspect}"
+    end
+  end
+  
+  def ensure_default_validity_option
+    # Ensure at least one validity option exists for this product
+    # Skip if flag is set (e.g., during seeding)
+    return if self.class.skip_default_validity_option_creation
+    
+    if validity_options.empty?
+      Rails.logger.debug "No validity options found, creating default trial option"
+      validity_options.create!(
+        duration_type: 'days',
+        duration_value: 1,
+        price: 1,
+        original_price: 1,
+        label: '1 Day Trial',
+        is_default: true,
+        sort_order: 0,
+        active: true
+      )
+    end
+  end
+  
+  def ensure_single_default_validity_option
+    # Get all default validity options for this product
+    default_options = validity_options.where(is_default: true)
+    
+    # If more than one default option exists, keep only the first one
+    if default_options.count > 1
+      first_default = default_options.first
+      validity_options.where(is_default: true).where.not(id: first_default.id).update_all(is_default: false)
+    end
   end
 end

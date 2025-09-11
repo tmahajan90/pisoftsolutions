@@ -1,0 +1,47 @@
+⚠️ PAYMENT FAILED - ORDER #<%= @order.id %>
+
+Dear <%= @user&.name || 'Valued Customer' %>,
+
+We're sorry to inform you that your payment for Order #<%= @order.id %> could not be processed successfully. Don't worry - your order is still reserved and you can retry the payment.
+
+📋 ORDER DETAILS
+================
+Order ID: #<%= @order.id %>
+Order Date: <%= @order.created_at.strftime("%B %d, %Y at %I:%M %p") %>
+Total Amount: ₹<%= @order.final_total %>
+Email: <%= @order.user_email %>
+
+🔄 COMPLETE YOUR PAYMENT
+========================
+Your order is still reserved. You can complete your payment using any of the following methods:
+
+Retry Payment: <%= payment_url(@order) %>
+Contact Support: <%= contact_url %>
+
+💡 COMMON REASONS FOR PAYMENT FAILURE:
+=====================================
+• Insufficient funds - Please check your account balance
+• Card expired - Verify your card's expiry date
+• Incorrect details - Double-check card number, CVV, and billing address
+• Bank restrictions - Contact your bank if the transaction is blocked
+• Network issues - Try again in a few minutes
+
+🆘 NEED HELP?
+=============
+If you continue to experience issues, our support team is here to help:
+• Email: support@pisoftsolutions.in
+• Phone: Available 24/7 for urgent issues
+• Live Chat: Available on our website
+
+IMPORTANT: Your order will be automatically cancelled if payment is not completed within 15 minutes. Please complete your payment soon to secure your items.
+
+Best regards,
+PiSoftSolutions Team
+
+---
+PiSoftSolutions
+Innovative Software Development & Digital Solutions
+Email: support@pisoftsolutions.in
+Website: https://pisoftsolutions.in
+
+This is an automated email. Please do not reply to this message.

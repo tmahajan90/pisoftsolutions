@@ -27,15 +27,21 @@ function setupCartPageEvents() {
   $(document).on('click', '.quantity-btn', function(e) {
     e.preventDefault();
     const productId = $(this).data('product-id');
+    const validityType = $(this).data('validity-type');
+    const validityDuration = $(this).data('validity-duration');
+    const validityPrice = $(this).data('validity-price');
     const change = $(this).data('change');
-    updateQuantity(productId, change);
+    updateQuantity(productId, change, validityType, validityDuration, validityPrice);
   });
   
   // Remove item buttons
   $(document).on('click', '.remove-item-btn', function(e) {
     e.preventDefault();
     const productId = $(this).data('product-id');
-    removeItem(productId);
+    const validityType = $(this).data('validity-type');
+    const validityDuration = $(this).data('validity-duration');
+    const validityPrice = $(this).data('validity-price');
+    removeItem(productId, validityType, validityDuration, validityPrice);
   });
   
   // Clear cart button
@@ -69,20 +75,21 @@ function updateQuantityButtonStates() {
 }
 
 // Update quantity function
-function updateQuantity(productId, change) {
-  console.log('Updating quantity for product:', productId, 'change:', change);
+function updateQuantity(productId, change, validityType, validityDuration, validityPrice) {
+  console.log('Updating quantity for product:', productId, 'change:', change, 'validity:', validityType, validityDuration, validityPrice);
   
   if (typeof $ === 'undefined') {
     console.error('jQuery not available for updateQuantity');
     return;
   }
   
-  const $item = $(`[data-product-id="${productId}"]`);
+  // Find the specific cart item with matching validity options
+  const $item = $(`.cart-item[data-product-id="${productId}"][data-validity-type="${validityType}"][data-validity-duration="${validityDuration}"][data-validity-price="${validityPrice}"]`);
   const $quantityDisplay = $item.find('.quantity-display');
   const $minusBtn = $item.find('.quantity-btn[data-change="-1"]');
   
   if ($quantityDisplay.length === 0) {
-    console.error('Quantity display element not found for product:', productId);
+    console.error('Quantity display element not found for product:', productId, 'with validity:', validityType, validityDuration, validityPrice);
     return;
   }
   
@@ -112,7 +119,10 @@ function updateQuantity(productId, change) {
     },
     data: JSON.stringify({
       product_id: productId,
-      quantity: newQuantity
+      quantity: newQuantity,
+      validity_type: validityType,
+      validity_duration: validityDuration,
+      validity_price: validityPrice
     }),
     success: function(data) {
       console.log('Update quantity success:', data);
@@ -150,8 +160,8 @@ function updateQuantity(productId, change) {
 }
 
 // Remove item function
-function removeItem(productId) {
-  console.log('Removing item for product:', productId);
+function removeItem(productId, validityType, validityDuration, validityPrice) {
+  console.log('Removing item for product:', productId, 'validity:', validityType, validityDuration, validityPrice);
   
   if (typeof $ === 'undefined') {
     console.error('jQuery not available for removeItem');
@@ -162,6 +172,9 @@ function removeItem(productId) {
     return;
   }
   
+  // Find the specific cart item with matching validity options
+  const $item = $(`.cart-item[data-product-id="${productId}"][data-validity-type="${validityType}"][data-validity-duration="${validityDuration}"][data-validity-price="${validityPrice}"]`);
+  
   $.ajax({
     url: '/cart/remove_item',
     method: 'DELETE',
@@ -170,13 +183,16 @@ function removeItem(productId) {
       'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
     },
     data: JSON.stringify({
-      product_id: productId
+      product_id: productId,
+      validity_type: validityType,
+      validity_duration: validityDuration,
+      validity_price: validityPrice
     }),
     success: function(data) {
       console.log('Remove item success:', data);
       if (data.success) {
-        // Remove the item from the DOM
-        $(`[data-product-id="${productId}"]`).fadeOut(300, function() {
+        // Remove the specific item from the DOM
+        $item.fadeOut(300, function() {
           $(this).remove();
           
           // Check if cart is empty
