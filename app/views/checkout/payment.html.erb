@@ -420,7 +420,7 @@
     try {
       // Initialize Cashfree SDK according to official documentation
       const cashfree = Cashfree({
-        mode: "sandbox" // Use sandbox for testing
+        mode: "<%= ENV['CASHFREE_ENVIRONMENT'] == 'production' ? 'production' : 'sandbox' %>"
       });
       
       console.log('Cashfree SDK initialized:', cashfree);
