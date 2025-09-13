@@ -10,94 +10,94 @@ Product.skip_default_validity_option_creation = true
 # User.destroy_all
 
 # Create products similar to Digi Bulk Marketing shop with INR pricing and multiple validity options
-products_data = [
-  {
-    name: 'WhatsApp Business API',
-    description: 'Official WhatsApp Business API for bulk messaging and customer engagement. Send unlimited messages to your customers.',
-    category: 'WhatsApp Solutions',
-    image_url: 'fab fa-whatsapp',
-    color: 'green',
-    badge: 'Popular',
-    rating: 4.9,
-    stock: 100,
-    active: true,
-    features: 'Unlimited messaging, Bulk campaigns, Media sharing, Template management, Analytics dashboard, API integration, 24/7 support',
-    validity_options: [
-      { duration: 1, type: 'days', price: 1, original_price: 1, label: '1 Day Trial' },
-      { duration: 30, type: 'days', price: 749, original_price: 1499, label: '30 Days' },
-      { duration: 90, type: 'days', price: 1499, original_price: 2999, label: '3 Months' },
-      { duration: 180, type: 'days', price: 1999, original_price: 3999, label: '6 Months' },
-      { duration: 365, type: 'days', price: 2499, original_price: 4999, label: '1 Year' },
-      { duration: 0, type: 'lifetime', price: 3749, original_price: 7499, label: 'Lifetime' }
-    ]
-  }
-]
+# products_data = [
+#   {
+#     name: 'WhatsApp Business API',
+#     description: 'Official WhatsApp Business API for bulk messaging and customer engagement. Send unlimited messages to your customers.',
+#     category: 'WhatsApp Solutions',
+#     image_url: 'fab fa-whatsapp',
+#     color: 'green',
+#     badge: 'Popular',
+#     rating: 4.9,
+#     stock: 100,
+#     active: true,
+#     features: 'Unlimited messaging, Bulk campaigns, Media sharing, Template management, Analytics dashboard, API integration, 24/7 support',
+#     validity_options: [
+#       { duration: 1, type: 'days', price: 1, original_price: 1, label: '1 Day Trial' },
+#       { duration: 30, type: 'days', price: 749, original_price: 1499, label: '30 Days' },
+#       { duration: 90, type: 'days', price: 1499, original_price: 2999, label: '3 Months' },
+#       { duration: 180, type: 'days', price: 1999, original_price: 3999, label: '6 Months' },
+#       { duration: 365, type: 'days', price: 2499, original_price: 4999, label: '1 Year' },
+#       { duration: 0, type: 'lifetime', price: 3749, original_price: 7499, label: 'Lifetime' }
+#     ]
+#   }
+# ]
 
-created_products = 0
-existing_products = 0
+# created_products = 0
+# existing_products = 0
 
-products_data.each do |product_data|
-  validity_options = product_data.delete(:validity_options)
+# products_data.each do |product_data|
+#   validity_options = product_data.delete(:validity_options)
   
-  # Check if product exists
-  existing_product = Product.find_by(name: product_data[:name])
+#   # Check if product exists
+#   existing_product = Product.find_by(name: product_data[:name])
   
-  if existing_product
-    existing_products += 1
-    product = existing_product
-  else
-    # Create new product
-    product = Product.create!(product_data)
-    created_products += 1
-  end
+#   if existing_product
+#     existing_products += 1
+#     product = existing_product
+#   else
+#     # Create new product
+#     product = Product.create!(product_data)
+#     created_products += 1
+#   end
   
-  # Create validity options for the product (only if they don't exist)
-  # First, ensure no existing options are marked as default to avoid conflicts
-  if product.validity_options.exists?
-    product.validity_options.update_all(is_default: false)
-  end
+#   # Create validity options for the product (only if they don't exist)
+#   # First, ensure no existing options are marked as default to avoid conflicts
+#   if product.validity_options.exists?
+#     product.validity_options.update_all(is_default: false)
+#   end
   
-  # Track if we've set a default option for this product
-  default_set = false
+#   # Track if we've set a default option for this product
+#   default_set = false
   
-  validity_options.each_with_index do |option_data, index|
-    existing_option = product.validity_options.find_by(
-      duration_type: option_data[:type],
-      duration_value: option_data[:duration]
-    )
+#   validity_options.each_with_index do |option_data, index|
+#     existing_option = product.validity_options.find_by(
+#       duration_type: option_data[:type],
+#       duration_value: option_data[:duration]
+#     )
     
-    unless existing_option
-      # Set the 30-day option (index 1) as default, but only if we haven't set one yet
-      should_be_default = index == 1 && !default_set
+#     unless existing_option
+#       # Set the 30-day option (index 1) as default, but only if we haven't set one yet
+#       should_be_default = index == 1 && !default_set
       
-      validity_option = product.validity_options.create!(
-        duration_type: option_data[:type],
-        duration_value: option_data[:duration],
-        price: option_data[:price],
-        original_price: option_data[:original_price] || option_data[:price],
-        label: option_data[:label],
-        is_default: should_be_default,
-        sort_order: index,
-        active: true # All options are active by default
-      )
+#       validity_option = product.validity_options.create!(
+#         duration_type: option_data[:type],
+#         duration_value: option_data[:duration],
+#         price: option_data[:price],
+#         original_price: option_data[:original_price] || option_data[:price],
+#         label: option_data[:label],
+#         is_default: should_be_default,
+#         sort_order: index,
+#         active: true # All options are active by default
+#       )
       
-      # Mark that we've set a default option
-      default_set = true if should_be_default
+#       # Mark that we've set a default option
+#       default_set = true if should_be_default
       
-      puts "  Created validity option: #{validity_option.label} - ₹#{validity_option.price} (was ₹#{validity_option.original_price})"
-    else
-      puts "  Found existing validity option: #{existing_option.label}"
-    end
-  end
-end
+#       puts "  Created validity option: #{validity_option.label} - ₹#{validity_option.price} (was ₹#{validity_option.original_price})"
+#     else
+#       puts "  Found existing validity option: #{existing_option.label}"
+#     end
+#   end
+# end
 
-if created_products > 0
-  puts "Created #{created_products} new products"
-end
-if existing_products > 0
-  puts "Found #{existing_products} existing products (no changes made)"
-end
-puts "Total products: #{Product.count}"
+# if created_products > 0
+#   puts "Created #{created_products} new products"
+# end
+# if existing_products > 0
+#   puts "Found #{existing_products} existing products (no changes made)"
+# end
+# puts "Total products: #{Product.count}"
 
 # Create sample offers
 offers = [
@@ -185,6 +185,22 @@ else
     password: 'ox4ymoro',
     password_confirmation: 'ox4ymoro',
     phone: '+91-9988915210',
+    role: 'admin'
+  )
+  puts "Created new admin user: #{admin_user.email}"
+end
+
+existing_admin = User.find_by(email: 'vaneet@pisoftsolutions.in')
+if existing_admin
+  admin_user = existing_admin
+  puts "Found existing admin user: #{admin_user.email}"
+else
+  admin_user = User.create!(
+    name: 'Admin User',
+    email: 'vaneet@pisoftsolutions.in',
+    password: 'ox4ymoro',
+    password_confirmation: 'ox4ymoro',
+    phone: '+91-9988915211',
     role: 'admin'
   )
   puts "Created new admin user: #{admin_user.email}"

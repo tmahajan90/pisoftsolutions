@@ -21,6 +21,24 @@ Rails.application.configure do
         currency: 'INR'
       }
     }
+    # ,
+    # razorpay: {
+    #   name: 'Razorpay',
+    #   key: 'razorpay',
+    #   enabled: ENV['RAZORPAY_KEY_ID'].present? && ENV['RAZORPAY_SECRET_KEY'].present?,
+    #   environment: ENV['RAZORPAY_ENVIRONMENT'] || 'sandbox',
+    #   key_id: ENV['RAZORPAY_KEY_ID'],
+    #   secret_key: ENV['RAZORPAY_SECRET_KEY'],
+    #   webhook_secret: ENV['RAZORPAY_WEBHOOK_SECRET'],
+    #   supported_methods: %w[card netbanking wallet upi emi],
+    #   features: {
+    #     refunds: true,
+    #     partial_refunds: true,
+    #     recurring_payments: true,
+    #     international_payments: false,
+    #     currency: 'INR'
+    #   }
+    # }
   }
 
   # Default payment gateway
@@ -29,28 +47,28 @@ Rails.application.configure do
   # Payment gateway selection logic
   config.payment_gateway_selection = {
     # Priority order for gateway selection
-    priority: %w[razorpay cashfree],
+    priority: %w[cashfree],
     
     # Gateway-specific rules
     rules: {
       # Use specific gateway for certain conditions
       amount_threshold: {
-        cashfree: 10000, # Use Cashfree for amounts above 10,000
-        razorpay: 0      # Use Razorpay for all amounts
+        cashfree: 0, # Use Cashfree for all amounts
+        # razorpay: 10000      # Use Razorpay for amounts above 10,000
       },
       
       # User preference
       user_preference: true, # Allow users to choose gateway
       
       # Fallback gateway
-      fallback: 'razorpay'
+      fallback: 'cashfree'
     }
   }
 end
 
 # PaymentGatewayConfig class definition
 class PaymentGatewayConfig
-  # SUPPORTED_GATEWAYS = %w[razorpay cashfree].freeze
+  # SUPPORTED_GATEWAYS = %w[cashfree razorpay].freeze
   SUPPORTED_GATEWAYS = %w[cashfree].freeze
 
   def self.available_gateways
