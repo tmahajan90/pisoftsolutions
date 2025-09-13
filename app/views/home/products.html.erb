@@ -96,9 +96,9 @@
             
             <!-- Quick View Button -->
             <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-              <button onclick="window.location.href='<%= product_detail_path(product) %>'" class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold transform translate-y-4 hover:translate-y-0 transition-all duration-300 cursor-pointer">
+              <%= link_to product_detail_path(product), class: "bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold transform translate-y-4 hover:translate-y-0 transition-all duration-300 inline-flex items-center" do %>
                 <i class="fas fa-eye mr-2"></i>View Details
-              </button>
+              <% end %>
             </div>
           </div>
           
@@ -231,9 +231,9 @@
                  <i class="fas fa-shopping-cart mr-2"></i>
                  Add to Cart
                </button>
-               <button onclick="window.location.href='<%= product_detail_path(product) %>'" class="px-3 py-2 border border-<%= product.color %>-600 text-<%= product.color %>-600 hover:bg-<%= product.color %>-50 rounded-lg transition duration-300">
+               <%= link_to product_detail_path(product), class: "px-3 py-2 border border-#{product.color}-600 text-#{product.color}-600 hover:bg-#{product.color}-50 rounded-lg transition duration-300 inline-flex items-center justify-center" do %>
                  <i class="fas fa-eye"></i>
-               </button>
+               <% end %>
              </div>
           </div>
         </div>
@@ -266,7 +266,7 @@
         <span class="text-lg font-semibold">Total:</span>
         <span id="cart-total" class="text-2xl font-bold text-indigo-600">$0.00</span>
       </div>
-      <button onclick="proceedToCheckout()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition duration-300">
+      <button id="proceed-to-checkout" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition duration-300">
         Proceed to Checkout
       </button>
     </div>
@@ -336,12 +336,12 @@
       Choose the right product for your business needs and start increasing your sales today.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <button onclick="scrollToProducts()" class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300">
+      <button id="browse-products" class="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300">
         Browse All Products
       </button>
-      <button onclick="contactSales()" class="border-2 border-white text-white hover:bg-white hover:text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300">
+      <%= link_to contact_path, class: "border-2 border-white text-white hover:bg-white hover:text-indigo-600 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300 inline-flex items-center justify-center" do %>
         Contact Sales
-      </button>
+      <% end %>
     </div>
   </div>
 </section>

@@ -90,7 +90,7 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
       <% @featured_products.each do |product| %>
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+        <div class="product-card bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-product-id="<%= product.id %>" data-category="<%= product.category %>" data-price="<%= product.default_validity_option&.price || 0 %>" data-rating="<%= product.rating %>" data-badge="<%= product.badge %>">
           <!-- Product Image -->
           <div class="relative">
             <div class="h-48 bg-gradient-to-br from-<%= product.color %>-500 to-<%= product.color %>-600 flex items-center justify-center">
@@ -104,9 +104,9 @@
             
             <!-- Quick View Button -->
             <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-              <button onclick="window.location.href='<%= product_detail_path(product) %>'" class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold transform translate-y-4 hover:translate-y-0 transition-all duration-300">
+              <%= link_to product_detail_path(product), class: "bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold transform translate-y-4 hover:translate-y-0 transition-all duration-300 inline-flex items-center" do %>
                 <i class="fas fa-eye mr-2"></i>View Details
-              </button>
+              <% end %>
             </div>
           </div>
           
@@ -214,9 +214,9 @@
                 <i class="fas fa-shopping-cart mr-2"></i>
                 Add to Cart
               </button>
-              <button onclick="window.location.href='<%= product_detail_path(product) %>'" class="px-3 py-2 border border-<%= product.color %>-600 text-<%= product.color %>-600 hover:bg-<%= product.color %>-50 rounded-lg transition duration-300 cursor-pointer">
+              <%= link_to product_detail_path(product), class: "px-3 py-2 border border-#{product.color}-600 text-#{product.color}-600 hover:bg-#{product.color}-50 rounded-lg transition duration-300 inline-flex items-center justify-center" do %>
                 <i class="fas fa-eye"></i>
-              </button>
+              <% end %>
             </div>
           </div>
         </div>
@@ -337,6 +337,50 @@
 </section>
 
 <!-- CSS for line clamping -->
+<!-- Shopping Cart Sidebar -->
+<div id="cart-sidebar" class="fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+  <div class="flex flex-col h-full">
+    <div class="flex items-center justify-between p-6 border-b">
+      <h3 class="text-xl font-bold text-gray-900">Shopping Cart</h3>
+      <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+    </div>
+    
+    <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+      <!-- Cart items will be dynamically added here -->
+      <div class="text-center text-gray-500 py-8">
+        <i class="fas fa-shopping-cart text-4xl mb-4"></i>
+        <p>Your cart is empty</p>
+      </div>
+    </div>
+    
+    <div class="border-t p-6">
+      <div class="flex justify-between items-center mb-4">
+        <span class="text-lg font-semibold">Total:</span>
+        <span id="cart-total" class="text-2xl font-bold text-indigo-600">₹0.00</span>
+      </div>
+      <button id="proceed-to-checkout" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition duration-300">
+        Proceed to Checkout
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Overlay -->
+<div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+<!-- Floating Cart Button -->
+<div class="fixed bottom-6 right-6 z-30">
+  <button id="open-cart" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition duration-300">
+    <i class="fas fa-shopping-cart text-xl"></i>
+    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">0</span>
+  </button>
+</div>
+
+<!-- Notification Container -->
+<div id="notification-container" class="fixed top-20 right-4 z-50"></div>
+
 <style>
   .line-clamp-2 {
     display: -webkit-box;

@@ -38,6 +38,18 @@ function initializeProducts() {
       showNotification('Removed from wishlist!');
     }
   });
+
+  // Browse products button
+  $('#browse-products').on('click', function() {
+    $('html, body').animate({
+      scrollTop: $('#products-grid').offset().top - 100
+    }, 800);
+  });
+
+  // Proceed to checkout button
+  $('#proceed-to-checkout').on('click', function() {
+    window.location.href = '/checkout';
+  });
   
   // Product card click navigation (excluding buttons)
   $(document).on('click', '.product-card', function(e) {
@@ -248,8 +260,8 @@ function updateHeaderCartCount(count) {
 
 // Initialize products functionality when DOM is ready
 $(document).ready(function() {
-  // Only initialize if we're on a page with products
-  if ($('.product-card').length > 0 || $('#products-grid').length > 0) {
+  // Only initialize if we're on a page with products or add-to-cart buttons
+  if ($('.product-card').length > 0 || $('#products-grid').length > 0 || $('.add-to-cart-btn').length > 0) {
     initializeProducts();
   }
 });
