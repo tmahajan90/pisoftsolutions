@@ -6,8 +6,8 @@
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-lg shadow p-6">
       <div class="flex items-center">
-        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-          <i class="fas fa-users text-blue-600 text-xl"></i>
+        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+          <i class="fas fa-users text-green-600 text-xl"></i>
         </div>
         <div>
           <h3 class="text-2xl font-bold text-gray-900"><%= @total_users %></h3>
@@ -63,21 +63,21 @@
           <p class="text-sm text-gray-500">Revenue trends over the last 6 months</p>
         </div>
         <div class="flex items-center space-x-2">
-          <div class="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+          <div class="w-3 h-3 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"></div>
           <span class="text-sm text-gray-600">Revenue</span>
         </div>
       </div>
       
       <!-- Chart Stats -->
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+        <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
           <div class="flex items-center">
-            <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center mr-3">
+            <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center mr-3">
               <i class="fas fa-chart-line text-white text-sm"></i>
             </div>
             <div>
-              <p class="text-xs text-blue-600 font-medium">Current Month</p>
-              <p class="text-lg font-bold text-blue-900">₹<%= number_with_precision(@current_month_revenue || 0, precision: 0) %></p>
+              <p class="text-xs text-green-600 font-medium">Current Month</p>
+              <p class="text-lg font-bold text-green-900">₹<%= number_with_precision(@current_month_revenue || 0, precision: 0) %></p>
             </div>
           </div>
         </div>
@@ -106,7 +106,7 @@
       <div class="space-y-4">
         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
           <div class="flex items-center">
-            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
               <i class="fas fa-user-plus text-white text-xs"></i>
             </div>
             <div>
@@ -114,7 +114,7 @@
               <p class="text-xs text-gray-500"><%= @recent_users.count %> this week</p>
             </div>
           </div>
-          <%= link_to admin_users_path, class: "text-blue-600 hover:text-blue-800 text-sm" do %>
+          <%= link_to admin_users_path, class: "text-green-600 hover:text-green-800 text-sm" do %>
             View All <i class="fas fa-arrow-right ml-1"></i>
           <% end %>
         </div>
@@ -174,7 +174,7 @@
                   <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
                     <%= case order.status
                         when 'pending' then 'bg-yellow-100 text-yellow-800'
-                        when 'paid' then 'bg-blue-100 text-blue-800'
+                        when 'paid' then 'bg-green-100 text-green-800'
                         when 'shipped' then 'bg-purple-100 text-purple-800'
                         when 'delivered' then 'bg-green-100 text-green-800'
                         when 'cancelled' then 'bg-red-100 text-red-800'
@@ -186,7 +186,7 @@
               </div>
             <% end %>
           </div>
-          <%= link_to admin_orders_path, class: "block mt-4 text-center text-blue-600 hover:text-blue-800 text-sm font-medium" do %>
+          <%= link_to admin_orders_path, class: "block mt-4 text-center text-green-600 hover:text-green-800 text-sm font-medium" do %>
             View All Orders <i class="fas fa-arrow-right ml-1"></i>
           <% end %>
         <% else %>
@@ -206,7 +206,7 @@
             <% @recent_users.each do |user| %>
               <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                 <div class="flex items-center">
-                  <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                  <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
                     <i class="fas fa-user text-white text-xs"></i>
                   </div>
                   <div>
@@ -222,7 +222,7 @@
               </div>
             <% end %>
           </div>
-          <%= link_to admin_users_path, class: "block mt-4 text-center text-blue-600 hover:text-blue-800 text-sm font-medium" do %>
+          <%= link_to admin_users_path, class: "block mt-4 text-center text-green-600 hover:text-green-800 text-sm font-medium" do %>
             View All Users <i class="fas fa-arrow-right ml-1"></i>
           <% end %>
         <% else %>
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
               const bodyLines = tooltipModel.body.map(b => b.lines);
               
               let innerHtml = '<div class="font-semibold mb-1">' + titleLines.join('') + '</div>';
-              innerHtml += '<div class="text-blue-200">' + bodyLines.join('') + '</div>';
+              innerHtml += '<div class="text-green-200">' + bodyLines.join('') + '</div>';
               
               tooltip.innerHTML = innerHtml;
             }

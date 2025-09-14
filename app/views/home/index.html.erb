@@ -1,18 +1,18 @@
 <!-- Hero Section -->
-<section class="bg-gradient-to-br from-indigo-50 to-purple-100 py-20">
+<section class="bg-gradient-to-br from-green-50 to-emerald-100 py-20">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
       <div>
         <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
           Transform Your Business with 
-          <span class="text-indigo-600">Innovative Software</span>
+          <span class="text-green-600">Innovative Software</span>
         </h1>
         <p class="text-xl text-gray-600 mb-8">
           🚀 PiSoftSolutions delivers cutting-edge software development, digital marketing, and business automation solutions to help your business thrive in the digital age.
         </p>
         <div class="flex flex-col sm:flex-row gap-4">
-          <%= link_to "Start Your Project", signup_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300 text-center" %>
-          <%= link_to "Schedule Consultation", signup_path, class: "border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300 text-center" %>
+          <%= link_to "Start Your Project", signup_path, class: "bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300 text-center" %>
+          <%= link_to "Schedule Consultation", signup_path, class: "border-2 border-green-600 text-green-600 hover:bg-green-600 hover:text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300 text-center" %>
         </div>
         
       </div>
@@ -26,7 +26,7 @@
           <div class="space-y-4">
             <div class="bg-gray-100 rounded-lg p-4">
               <div class="flex items-center mb-2">
-                <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center mr-3">
+                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
                   <i class="fas fa-code text-white text-sm"></i>
                 </div>
                 <span class="font-semibold">Custom Software Development</span>
@@ -63,7 +63,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="text-center">
       <h2 class="text-4xl font-bold text-gray-900 mb-4">Drive Innovation</h2>
-      <h3 class="text-3xl font-semibold text-indigo-600 mb-6">Empowering Businesses with Cutting-Edge Technology</h3>
+      <h3 class="text-3xl font-semibold text-green-600 mb-6">Empowering Businesses with Cutting-Edge Technology</h3>
       <p class="text-xl text-gray-600 max-w-3xl mx-auto">
         At PiSoftSolutions, we believe technology should be an enabler, not a barrier. Our team of expert developers, designers, and strategists work together to create innovative solutions that transform businesses and drive sustainable growth in today's competitive digital landscape.
       </p>
@@ -162,7 +162,7 @@
             <!-- Validity -->
             <div class="mb-4">
               <div class="flex items-center text-xs text-gray-600">
-                <i class="fas fa-clock text-blue-500 mr-2"></i>
+                <i class="fas fa-clock text-green-500 mr-2"></i>
                 <% 
                   # Get the appropriate validity option to display
                   display_validity_option = if product.get_validity_options.any?
@@ -208,7 +208,7 @@
     
     <!-- Show More Button -->
     <div class="text-center">
-      <%= link_to products_path, class: "inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition duration-300" do %>
+      <%= link_to products_path, class: "inline-flex items-center bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition duration-300" do %>
         <i class="fas fa-arrow-right mr-2"></i>
         View All Products
       <% end %>
@@ -226,8 +226,8 @@
     
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       <div class="text-center">
-        <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <i class="fas fa-users text-3xl text-indigo-600"></i>
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i class="fas fa-users text-3xl text-green-600"></i>
         </div>
         <h3 class="text-xl font-bold text-gray-900 mb-4">Expert Team</h3>
         <p class="text-gray-600">Our team of certified professionals brings years of experience and expertise to every project.</p>
@@ -276,7 +276,7 @@
       Let's discuss how our innovative solutions can help you achieve your business goals and stay ahead of the competition.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <%= link_to "Sign Up", signup_path, class: "bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
+      <%= link_to "Sign Up", signup_path, class: "bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
     </div>
   </div>
 </section>
@@ -303,9 +303,9 @@
     <div class="border-t p-6">
       <div class="flex justify-between items-center mb-4">
         <span class="text-lg font-semibold">Total:</span>
-        <span id="cart-total" class="text-2xl font-bold text-indigo-600">₹0.00</span>
+        <span id="cart-total" class="text-2xl font-bold text-green-600">₹0.00</span>
       </div>
-      <button id="proceed-to-checkout" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-lg font-semibold transition duration-300">
+      <button id="proceed-to-checkout" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition duration-300">
         Proceed to Checkout
       </button>
     </div>
@@ -317,7 +317,7 @@
 
 <!-- Floating Cart Button -->
 <div class="fixed bottom-6 right-6 z-30">
-  <button id="open-cart" class="bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-full shadow-lg transition duration-300">
+  <button id="open-cart" class="bg-green-600 hover:bg-green-700 text-white p-4 rounded-full shadow-lg transition duration-300">
     <i class="fas fa-shopping-cart text-xl"></i>
     <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">0</span>
   </button>
