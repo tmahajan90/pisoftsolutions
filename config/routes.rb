@@ -42,7 +42,7 @@ Rails.application.routes.draw do
   get 'products', to: 'home#products'
   get 'products/:id', to: 'home#product_detail', as: 'product_detail'
   get 'products/:id/validity_options', to: 'home#validity_options'
-  get 'pricing', to: 'home#pricing'
+  # get 'pricing', to: 'home#pricing'
   get 'contact', to: 'home#contact'
   get 'about', to: 'home#about'
   get 'features', to: 'home#features'
