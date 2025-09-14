@@ -47,6 +47,11 @@ Rails.application.routes.draw do
   get 'about', to: 'home#about'
   get 'features', to: 'home#features'
   
+  # Legal pages
+  get 'privacy-policy', to: 'legal#privacy_policy'
+  get 'terms-and-conditions', to: 'legal#terms_and_conditions'
+  get 'return-refund-policy', to: 'legal#return_refund_policy'
+  
   # Cart routes
   resource :cart, only: [:show] do
     collection do
