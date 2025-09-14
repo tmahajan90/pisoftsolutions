@@ -45,7 +45,6 @@ Rails.application.routes.draw do
   # get 'pricing', to: 'home#pricing'
   get 'contact', to: 'home#contact'
   get 'about', to: 'home#about'
-  get 'features', to: 'home#features'
   
   # Legal pages
   get 'privacy-policy', to: 'legal#privacy_policy'

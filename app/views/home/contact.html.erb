@@ -133,8 +133,17 @@
               <i class="fas fa-map-marker-alt text-purple-600"></i>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 mb-1">Office Address</h3>
-              <p class="text-gray-600 mb-2">Sunrise Enclave, Nh 205A, Kharar - Landran Rd, Sector 127, Sahibzada Ajit Singh Nagar, Punjab 140307</p>
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">Office Addresses</h3>
+              <div class="space-y-2">
+                <div>
+                  <p class="text-gray-600 mb-1"><strong>Punjab Office:</strong></p>
+                  <p class="text-gray-600 mb-2">Sunrise Enclave, Nh 205A, Kharar - Landran Rd, Sector 127, Sahibzada Ajit Singh Nagar, Punjab 140307</p>
+                </div>
+                <div>
+                  <p class="text-gray-600 mb-1"><strong>Jammu Office:</strong></p>
+                  <p class="text-gray-600 mb-2">Shop No 4-A2, South Block, Bahu Plaza Jammu -180004</p>
+                </div>
+              </div>
               <p class="text-sm text-gray-500">India</p>
             </div>
           </div>
@@ -236,8 +245,8 @@
       Contact us today to learn how PiSoftSolutions can transform your business and boost your revenue.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <%= link_to "Schedule Demo", "#", class: "bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
-      <%= link_to "Start Free Trial", "#", class: "border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
+      <%= link_to "Schedule Demo", signup_path, class: "bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
+      <%= link_to "Start Free Trial", signup_path, class: "border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 rounded-lg font-semibold text-lg transition duration-300" %>
     </div>
   </div>
 </section>
