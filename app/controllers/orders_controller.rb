@@ -1,5 +1,5 @@
 class OrdersController < ApplicationController
-  before_action :require_login
+  before_action :authenticate_user!
   before_action :get_or_create_cart, only: [:new, :create]
   before_action :set_order, only: [:show]
   
@@ -22,11 +22,24 @@ class OrdersController < ApplicationController
     if @order.save
       # Create order items from cart
       @cart.cart_items.each do |cart_item|
+        # Calculate the price for this order item
+        item_price = if cart_item.validity_price.present? && cart_item.validity_price > 0
+                      cart_item.validity_price
+                    else
+                      # Find the matching validity option or use default
+                      validity_option = cart_item.product.validity_options.find do |option|
+                        option.duration_type == cart_item.validity_type && 
+                        option.duration_value == cart_item.validity_duration
+                      end
+                      
+                      validity_option&.price || cart_item.product.default_validity_option&.price || 0
+                    end
+        
         OrderItem.create!(
           order: @order,
           product: cart_item.product,
           quantity: cart_item.quantity,
-          price: cart_item.validity_price || cart_item.product.default_validity_option&.price || 0,
+          price: item_price,
           validity_type: cart_item.validity_type,
           validity_duration: cart_item.validity_duration
         )
@@ -34,6 +47,10 @@ class OrdersController < ApplicationController
       
       # Clear the cart
       @cart.clear
+      
+      # Send confirmation emails after order items are created
+      @order.send_order_confirmation_email
+      @order.send_admin_order_notification
       
       redirect_to @order, notice: 'Order placed successfully! Confirmation emails have been sent.'
     else

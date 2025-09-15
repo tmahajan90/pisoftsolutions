@@ -1,4 +1,5 @@
 class CheckoutController < ApplicationController
+  before_action :authenticate_user!, except: [:index]
   before_action :get_or_create_cart, only: [:index, :apply_offer, :process_payment]
   before_action :load_available_offers, only: [:index]
   
@@ -32,11 +33,24 @@ class CheckoutController < ApplicationController
       
       # Add cart items to order
       @cart.cart_items.each do |cart_item|
+        # Calculate the price for this order item
+        item_price = if cart_item.validity_price.present? && cart_item.validity_price > 0
+                      cart_item.validity_price
+                    else
+                      # Find the matching validity option or use default
+                      validity_option = cart_item.product.validity_options.find do |option|
+                        option.duration_type == cart_item.validity_type && 
+                        option.duration_value == cart_item.validity_duration
+                      end
+                      
+                      validity_option&.price || cart_item.product.default_validity_option&.price || 0
+                    end
+        
         OrderItem.create!(
           order: @order,
           product: cart_item.product,
           quantity: cart_item.quantity,
-          price: cart_item.validity_price || cart_item.product.default_validity_option&.price || 0,
+          price: item_price,
           validity_type: cart_item.validity_type,
           validity_duration: cart_item.validity_duration
         )
@@ -110,11 +124,26 @@ class CheckoutController < ApplicationController
         
         # Create order items from cart
         @cart.cart_items.each do |cart_item|
+          # Calculate the price for this order item
+          item_price = if cart_item.validity_price.present? && cart_item.validity_price > 0
+                        cart_item.validity_price
+                      else
+                        # Find the matching validity option or use default
+                        validity_option = cart_item.product.validity_options.find do |option|
+                          option.duration_type == cart_item.validity_type && 
+                          option.duration_value == cart_item.validity_duration
+                        end
+                        
+                        validity_option&.price || cart_item.product.default_validity_option&.price || 0
+                      end
+          
+          Rails.logger.info "Creating order item for #{cart_item.product.name}: price=#{item_price}, validity_price=#{cart_item.validity_price}, validity_type=#{cart_item.validity_type}, validity_duration=#{cart_item.validity_duration}"
+          
           OrderItem.create!(
             order: @order,
             product: cart_item.product,
             quantity: cart_item.quantity,
-            price: cart_item.validity_price || cart_item.product.default_validity_option&.price || 0,
+            price: item_price,
             validity_type: cart_item.validity_type,
             validity_duration: cart_item.validity_duration
           )
@@ -173,9 +202,14 @@ class CheckoutController < ApplicationController
       @cart.clear
       Rails.logger.info "Cart cleared successfully"
       
+      # Send confirmation emails after order items are created
+      @order.send_order_confirmation_email
+      @order.send_admin_order_notification
+      Rails.logger.info "Confirmation emails sent"
+      
       # Redirect to payment page with Razorpay order details
       Rails.logger.info "Redirecting to payment page: #{payment_path(@order)}"
-      redirect_to payment_path(@order), notice: 'Order created successfully! Confirmation emails have been sent. Please complete the payment.'
+      redirect_to payment_path(@order), notice: 'Order created successfully! Confirmation emails have been sent. Please complete the payment here or via email.'
     else
       # Handle failure
       if @order.persisted?

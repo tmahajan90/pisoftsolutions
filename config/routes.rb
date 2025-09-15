@@ -1,5 +1,11 @@
 Rails.application.routes.draw do
-  # Authentication routes
+  # Devise authentication routes
+  devise_for :users, controllers: {
+    confirmations: 'users/confirmations',
+    registrations: 'users/registrations'
+  }
+  
+  # Legacy authentication routes (keeping for backward compatibility)
   get 'signup', to: 'users#new', as: 'signup'
   post 'signup', to: 'users#create'
   get 'login', to: 'sessions#new', as: 'login'

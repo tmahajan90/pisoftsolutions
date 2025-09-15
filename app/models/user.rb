@@ -1,7 +1,10 @@
 require 'bcrypt'
 
 class User < ApplicationRecord
-  has_secure_password
+  # Include default devise modules. Others available are:
+  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable, :confirmable
   
   has_many :orders, dependent: :destroy
   has_many :carts, dependent: :destroy
@@ -12,13 +15,10 @@ class User < ApplicationRecord
   has_many :features, through: :user_features
   has_many :subscriptions, dependent: :destroy
   
-  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :name, presence: true
   validates :phone, presence: true
-  validates :password, length: { minimum: 6 }, if: -> { new_record? || password.present? }
   
-  # Email callbacks
-  after_create :send_welcome_email
+  # Email callbacks (Devise will handle confirmation emails)
   after_create :send_admin_signup_notification
   
   # Admin role functionality
@@ -226,6 +226,12 @@ class User < ApplicationRecord
       monthly_revenue: total_monthly_revenue,
       yearly_revenue: total_yearly_revenue
     }
+  end
+
+  # Override Devise's confirm method to send welcome email after confirmation
+  def confirm
+    super
+    send_welcome_email if confirmed?
   end
 
   private

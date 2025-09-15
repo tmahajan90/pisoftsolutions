@@ -1,21 +1,29 @@
 class ApplicationController < ActionController::Base
-  helper_method :current_user, :logged_in?
+  # Authentication will be handled by individual controllers
+  before_action :configure_permitted_parameters, if: :devise_controller?
+  
+  # Keep legacy helper methods for backward compatibility
+  helper_method :logged_in?
+
+  protected
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:name, :phone])
+    devise_parameter_sanitizer.permit(:account_update, keys: [:name, :phone])
+  end
 
   private
 
-  def current_user
-    @current_user ||= User.find(session[:user_id]) if session[:user_id]
-  rescue ActiveRecord::RecordNotFound
-    session[:user_id] = nil
-  end
+  # Legacy methods for backward compatibility
+  # Note: current_user is provided by Devise automatically
 
   def logged_in?
-    !!current_user
+    user_signed_in?
   end
 
   def require_login
-    unless logged_in?
-      redirect_to login_path, alert: 'Please log in to access this page.'
+    unless user_signed_in?
+      redirect_to new_user_session_path, alert: 'Please log in to access this page.'
     end
   end
 

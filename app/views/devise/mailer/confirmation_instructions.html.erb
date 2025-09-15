@@ -2,10 +2,10 @@
 <div style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 40px 20px; text-align: center;">
   <div style="max-width: 500px; margin: 0 auto;">
     <h1 style="color: #ffffff; font-size: 32px; font-weight: bold; margin: 0 0 10px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-      Welcome to PiSoftSolutions!
+      Email Confirmation Required
     </h1>
     <p style="color: #ffffff; font-size: 18px; margin: 0; opacity: 0.9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-      Your account has been successfully created
+      Please confirm your email address to activate your account
     </p>
   </div>
 </div>
@@ -17,48 +17,52 @@
     <!-- Greeting -->
     <div style="margin-bottom: 30px;">
       <h2 style="color: #1f2937; font-size: 24px; font-weight: 600; margin: 0 0 15px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        Hello <%= @user.name %>!
+        Welcome to PiSoftSolutions!
       </h2>
       <p style="color: #6b7280; font-size: 16px; line-height: 1.6; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        Thank you for confirming your email and joining PiSoftSolutions! We're excited to have you on board and look forward to helping you with your software needs.
+        Thank you for signing up! To complete your registration and activate your account, please confirm your email address by clicking the button below.
       </p>
     </div>
 
-    <!-- Account Details -->
+    <!-- Confirmation Details -->
     <div style="background-color: #f9fafb; border-radius: 8px; padding: 25px; margin-bottom: 30px; border-left: 4px solid #10b981;">
       <h3 style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0 0 15px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        Your Account Details
+        Account Details
       </h3>
       <div style="color: #4b5563; font-size: 14px; line-height: 1.8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        <p style="margin: 5px 0;"><strong>Name:</strong> <%= @user.name %></p>
-        <p style="margin: 5px 0;"><strong>Email:</strong> <%= @user.email %></p>
-        <p style="margin: 5px 0;"><strong>Phone:</strong> <%= @user.phone %></p>
-        <p style="margin: 5px 0;"><strong>Signup Date:</strong> <%= @signup_date %> at <%= @signup_time %></p>
-        <p style="margin: 5px 0;"><strong>Account Status:</strong> <span style="color: #059669; font-weight: 600;">Confirmed</span></p>
-      </div>
-    </div>
-
-    <!-- Next Steps -->
-    <div style="margin-bottom: 30px;">
-      <h3 style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0 0 15px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        What's Next?
-      </h3>
-      <div style="color: #4b5563; font-size: 16px; line-height: 1.6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-        <ul style="margin: 0; padding-left: 20px;">
-          <li style="margin-bottom: 8px;">Your account is now fully activated and ready to use</li>
-          <li style="margin-bottom: 8px;">Explore our range of software products and services</li>
-          <li style="margin-bottom: 8px;">Browse our catalog and add items to your cart</li>
-          <li style="margin-bottom: 8px;">Take advantage of our trial offers</li>
-          <li style="margin-bottom: 8px;">Contact our support team if you need any assistance</li>
-        </ul>
+        <p style="margin: 5px 0;"><strong>Email:</strong> <%= @email %></p>
+        <p style="margin: 5px 0;"><strong>Confirmation Required:</strong> Yes</p>
+        <p style="margin: 5px 0;"><strong>Account Status:</strong> Pending Confirmation</p>
       </div>
     </div>
 
     <!-- CTA Button -->
     <div style="text-align: center; margin-bottom: 30px;">
-      <a href="<%= root_url %>" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s;">
-        Start Exploring
+      <a href="<%= confirmation_url(@resource, confirmation_token: @token) %>" style="display: inline-block; background-color: #059669; color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; transition: background-color 0.3s;">
+        Confirm My Email Address
       </a>
+    </div>
+
+    <!-- Alternative Link -->
+    <div style="text-align: center; margin-bottom: 30px;">
+      <p style="color: #6b7280; font-size: 14px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        If the button doesn't work, copy and paste this link into your browser:
+      </p>
+      <p style="color: #059669; font-size: 12px; margin: 5px 0; word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <%= confirmation_url(@resource, confirmation_token: @token) %>
+      </p>
+    </div>
+
+    <!-- Important Information -->
+    <div style="background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+      <h4 style="color: #92400e; font-size: 16px; font-weight: 600; margin: 0 0 10px 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        ⚠️ Important Information
+      </h4>
+      <ul style="color: #92400e; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <li style="margin-bottom: 5px;">You must confirm your email within 7 days</li>
+        <li style="margin-bottom: 5px;">You cannot log in until your email is confirmed</li>
+        <li style="margin-bottom: 5px;">If you didn't create this account, please ignore this email</li>
+      </ul>
     </div>
 
     <!-- Support Information -->
@@ -84,7 +88,7 @@
       © <%= Date.current.year %> PiSoftSolutions. All rights reserved.
     </p>
     <p style="color: #9ca3af; font-size: 12px; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-      This email was sent to <%= @user.email %> because you created an account with us.
+      This email was sent to <%= @email %> because you created an account with us.
     </p>
   </div>
 </div>

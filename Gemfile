@@ -38,6 +38,9 @@ gem "jbuilder"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Devise for authentication with email confirmation
+gem "devise"
+
 # Razorpay payment gateway integration
 gem "razorpay", "~> 3.2", require: 'razorpay'
 

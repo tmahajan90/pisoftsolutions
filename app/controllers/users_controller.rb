@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :set_user, only: [:show, :edit, :update]
-  before_action :require_login, only: [:show, :edit, :update]
+  before_action :authenticate_user!, only: [:show, :edit, :update]
 
   def new
     @user = User.new
@@ -10,7 +10,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
     if @user.save
       session[:user_id] = @user.id
-      redirect_to root_path, notice: 'Account created successfully! Welcome emails have been sent.'
+      redirect_to root_path, notice: 'Account created successfully! Welcome emails have been sent. Please confirm your email address to activate your account.'
     else
       render :new, status: :unprocessable_entity
     end

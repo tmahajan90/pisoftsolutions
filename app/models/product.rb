@@ -112,7 +112,16 @@ class Product < ApplicationRecord
   end
   
   def default_validity_option
-    validity_options.default.first || validity_options.sorted_by_duration.first
+    # First try to find a default validity option
+    default_option = validity_options.default.first
+    return default_option if default_option&.price&.positive?
+    
+    # If no default or default has no price, try to find any option with a positive price
+    valid_option = validity_options.sorted_by_duration.find { |option| option.price&.positive? }
+    return valid_option if valid_option
+    
+    # If still no valid option, return the first one (even if price is 0)
+    validity_options.sorted_by_duration.first
   end
   
   # Trial-related methods

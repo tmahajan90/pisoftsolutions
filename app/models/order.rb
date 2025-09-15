@@ -11,9 +11,7 @@ class Order < ApplicationRecord
   validates :payment_status, inclusion: { in: %w[pending success failed], allow_nil: true }
   validates :payment_gateway, inclusion: { in: %w[razorpay cashfree] }
   
-  # Email callbacks
-  after_create :send_order_confirmation_email
-  after_create :send_admin_order_notification
+  # Email callbacks - moved to controllers to ensure order items are created first
   
   scope :recent, -> { order(created_at: :desc) }
   
@@ -156,6 +154,18 @@ class Order < ApplicationRecord
     return unless payment_pending?
     PaymentMailer.payment_reminder(self).deliver_now
   end
+
+  def send_order_confirmation_email
+    OrderMailer.order_confirmation(self).deliver_now
+  rescue => e
+    Rails.logger.error "Failed to send order confirmation email for order #{id}: #{e.message}"
+  end
+
+  def send_admin_order_notification
+    OrderMailer.admin_order_notification(self).deliver_now
+  rescue => e
+    Rails.logger.error "Failed to send admin order notification for order #{id}: #{e.message}"
+  end
   
   private
   
@@ -176,17 +186,5 @@ class Order < ApplicationRecord
   
   def update_total_amount
     update(total_amount: final_total)
-  end
-
-  def send_order_confirmation_email
-    OrderMailer.order_confirmation(self).deliver_now
-  rescue => e
-    Rails.logger.error "Failed to send order confirmation email for order #{id}: #{e.message}"
-  end
-
-  def send_admin_order_notification
-    OrderMailer.admin_order_notification(self).deliver_now
-  rescue => e
-    Rails.logger.error "Failed to send admin order notification for order #{id}: #{e.message}"
   end
 end
