@@ -175,7 +175,7 @@ class CheckoutController < ApplicationController
       
       # Redirect to payment page with Razorpay order details
       Rails.logger.info "Redirecting to payment page: #{payment_path(@order)}"
-      redirect_to payment_path(@order), notice: 'Order created successfully! Please complete the payment.'
+      redirect_to payment_path(@order), notice: 'Order created successfully! Confirmation emails have been sent. Please complete the payment.'
     else
       # Handle failure
       if @order.persisted?

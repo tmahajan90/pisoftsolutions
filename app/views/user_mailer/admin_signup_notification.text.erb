@@ -1,0 +1,28 @@
+🔔 NEW USER SIGNUP NOTIFICATION
+===============================
+
+A new user has successfully registered on PiSoftSolutions.
+
+USER INFORMATION
+================
+Name: <%= @user.name %>
+Email: <%= @user.email %>
+Phone: <%= @user.phone %>
+User ID: #<%= @user.id %>
+Registration Date: <%= @signup_date %> at <%= @signup_time %>
+<% if @user_agent.present? %>User Agent: <%= @user_agent %><% end %>
+<% if @ip_address.present? %>IP Address: <%= @ip_address %><% end %>
+
+QUICK ACTIONS
+=============
+• View user profile in admin panel
+• Check all registered users
+• Monitor user activity
+
+PLATFORM STATISTICS
+===================
+Total registered users: <%= User.count %>
+New signups today: <%= User.where(created_at: Date.current.beginning_of_day..Date.current.end_of_day).count %>
+
+---
+This is an automated notification from PiSoftSolutions Admin Panel.

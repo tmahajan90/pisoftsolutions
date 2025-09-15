@@ -35,7 +35,7 @@ class OrdersController < ApplicationController
       # Clear the cart
       @cart.clear
       
-      redirect_to @order, notice: 'Order placed successfully!'
+      redirect_to @order, notice: 'Order placed successfully! Confirmation emails have been sent.'
     else
       @cart_items = @cart.cart_items.includes(:product)
       render :new

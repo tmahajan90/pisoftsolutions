@@ -17,6 +17,10 @@ class User < ApplicationRecord
   validates :phone, presence: true
   validates :password, length: { minimum: 6 }, if: -> { new_record? || password.present? }
   
+  # Email callbacks
+  after_create :send_welcome_email
+  after_create :send_admin_signup_notification
+  
   # Admin role functionality
   enum role: { user: 0, admin: 1 }
   
@@ -222,6 +226,20 @@ class User < ApplicationRecord
       monthly_revenue: total_monthly_revenue,
       yearly_revenue: total_yearly_revenue
     }
+  end
+
+  private
+
+  def send_welcome_email
+    UserMailer.welcome_email(self).deliver_now
+  rescue => e
+    Rails.logger.error "Failed to send welcome email to #{email}: #{e.message}"
+  end
+
+  def send_admin_signup_notification
+    UserMailer.admin_signup_notification(self).deliver_now
+  rescue => e
+    Rails.logger.error "Failed to send admin signup notification for #{email}: #{e.message}"
   end
 end
 

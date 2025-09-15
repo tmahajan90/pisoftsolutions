@@ -1,0 +1,54 @@
+🛒 NEW ORDER RECEIVED NOTIFICATION
+==================================
+
+A new order has been placed on PiSoftSolutions and requires your attention.
+
+ORDER SUMMARY
+=============
+Order ID: #<%= @order.id %>
+Customer: <%= @user&.name || 'Guest' %>
+Email: <%= @order.user_email %>
+<% if @user&.phone.present? %>Phone: <%= @user.phone %><% end %>
+Order Date: <%= @order_date %> at <%= @order_time %>
+Status: <%= @order.status.titleize %>
+Payment Status: <%= @order.payment_status&.titleize || 'Pending' %>
+Total Amount: ₹<%= @order.total_amount %>
+
+ORDER ITEMS (<%= @order_items.count %>)
+======================================
+<% @order_items.each do |item| %>
+• <%= item.product.name %>
+  Quantity: <%= item.quantity %>
+  <% if item.validity_type.present? %>Validity: <%= item.validity_type.titleize %> - <%= item.validity_duration %> days<% end %>
+  Price: ₹<%= item.price %> each
+  Subtotal: ₹<%= item.subtotal %>
+
+<% end %>
+
+<% if @applied_offers.any? %>
+APPLIED OFFERS
+==============
+<% @applied_offers.each do |offer| %>
+• <%= offer.name %>: -₹<%= offer.order_offers.find_by(order: @order).discount_amount %>
+<% end %>
+
+<% end %>
+FINANCIAL SUMMARY
+================
+Subtotal: ₹<%= @order.subtotal %>
+<% if @order.total_discount > 0 %>Discount: -₹<%= @order.total_discount %><% end %>
+Total Amount: ₹<%= @order.total_amount %>
+
+QUICK ACTIONS
+=============
+• View order details in admin panel
+• Check all orders
+• Monitor order status
+
+TODAY'S STATISTICS
+==================
+Total orders today: <%= Order.where(created_at: Date.current.beginning_of_day..Date.current.end_of_day).count %>
+Total revenue today: ₹<%= Order.where(created_at: Date.current.beginning_of_day..Date.current.end_of_day).sum(:total_amount) %>
+
+---
+This is an automated notification from PiSoftSolutions Admin Panel.

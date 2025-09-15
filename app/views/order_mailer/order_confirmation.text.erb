@@ -1,0 +1,57 @@
+ORDER CONFIRMED! 🎉
+==================
+
+Hello <%= @user&.name || 'Customer' %>!
+
+We've received your order and are processing it. You'll receive another email once your payment is confirmed.
+
+ORDER DETAILS
+=============
+Order Number: #<%= @order.id %>
+Order Date: <%= @order_date %> at <%= @order_time %>
+Customer Email: <%= @order.user_email %>
+Status: <%= @order.status.titleize %>
+Payment Status: <%= @order.payment_status&.titleize || 'Pending' %>
+
+ORDER ITEMS
+===========
+<% @order_items.each do |item| %>
+• <%= item.product.name %>
+  Quantity: <%= item.quantity %>
+  <% if item.validity_type.present? %>Validity: <%= item.validity_type.titleize %> - <%= item.validity_duration %> days<% end %>
+  Price: ₹<%= item.subtotal %>
+
+<% end %>
+
+<% if @applied_offers.any? %>
+APPLIED OFFERS
+==============
+<% @applied_offers.each do |offer| %>
+• <%= offer.name %>: -₹<%= offer.order_offers.find_by(order: @order).discount_amount %>
+<% end %>
+
+<% end %>
+ORDER SUMMARY
+=============
+Subtotal: ₹<%= @order.subtotal %>
+<% if @order.total_discount > 0 %>Discount: -₹<%= @order.total_discount %><% end %>
+Total Amount: ₹<%= @order.total_amount %>
+
+WHAT'S NEXT?
+============
+• Complete your payment to activate your order
+• You'll receive a payment confirmation email once payment is successful
+• Access your products immediately after payment confirmation
+• Contact support if you need any assistance
+
+View your order: <%= order_url(@order) %>
+
+NEED HELP?
+==========
+If you have any questions about your order, please don't hesitate to contact our support team.
+
+Email: support@pisoftsolutions.in
+
+---
+© <%= Date.current.year %> PiSoftSolutions. All rights reserved.
+This email was sent to <%= @order.user_email %> because you placed an order with us.
