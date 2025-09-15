@@ -11,8 +11,6 @@ class Order < ApplicationRecord
   validates :payment_status, inclusion: { in: %w[pending success failed], allow_nil: true }
   validates :payment_gateway, inclusion: { in: %w[razorpay cashfree] }
   
-  # Email callbacks - moved to controllers to ensure order items are created first
-  
   scope :recent, -> { order(created_at: :desc) }
   
   def self.statuses
@@ -165,6 +163,21 @@ class Order < ApplicationRecord
     OrderMailer.admin_order_notification(self).deliver_now
   rescue => e
     Rails.logger.error "Failed to send admin order notification for order #{id}: #{e.message}"
+  end
+
+  # Helper method to calculate item price from cart item
+  def self.calculate_item_price(cart_item)
+    if cart_item.validity_price.present? && cart_item.validity_price > 0
+      cart_item.validity_price
+    else
+      # Find the matching validity option or use default
+      validity_option = cart_item.product.validity_options.find do |option|
+        option.duration_type == cart_item.validity_type && 
+        option.duration_value == cart_item.validity_duration
+      end
+      
+      validity_option&.price || cart_item.product.default_validity_option&.price || 0
+    end
   end
   
   private

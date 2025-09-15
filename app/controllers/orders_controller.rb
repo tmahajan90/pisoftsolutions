@@ -22,24 +22,11 @@ class OrdersController < ApplicationController
     if @order.save
       # Create order items from cart
       @cart.cart_items.each do |cart_item|
-        # Calculate the price for this order item
-        item_price = if cart_item.validity_price.present? && cart_item.validity_price > 0
-                      cart_item.validity_price
-                    else
-                      # Find the matching validity option or use default
-                      validity_option = cart_item.product.validity_options.find do |option|
-                        option.duration_type == cart_item.validity_type && 
-                        option.duration_value == cart_item.validity_duration
-                      end
-                      
-                      validity_option&.price || cart_item.product.default_validity_option&.price || 0
-                    end
-        
         OrderItem.create!(
           order: @order,
           product: cart_item.product,
           quantity: cart_item.quantity,
-          price: item_price,
+          price: Order.calculate_item_price(cart_item),
           validity_type: cart_item.validity_type,
           validity_duration: cart_item.validity_duration
         )
