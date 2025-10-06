@@ -6,6 +6,7 @@
 # POSTGRES_USER=your_db_user
 # POSTGRES_PASSWORD=your_db_password
 
+services:
   web:
     build: .
     command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails tailwindcss:build && bundle exec rails s -p 3000 -b '0.0.0.0' -e ${RAILS_ENV:-production}"
