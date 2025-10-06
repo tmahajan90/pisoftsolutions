@@ -6,11 +6,13 @@ Rails.application.routes.draw do
   }
   
   # Legacy authentication routes (keeping for backward compatibility)
-  get 'signup', to: 'users#new', as: 'signup'
-  post 'signup', to: 'users#create'
-  get 'login', to: 'sessions#new', as: 'login'
-  post 'login', to: 'sessions#create'
-  delete 'logout', to: 'sessions#destroy', as: 'logout'
+  devise_scope :user do
+    get 'signup', to: 'users#new', as: 'signup'
+    post 'signup', to: 'users#create'
+    get 'login', to: 'devise/sessions#new', as: 'login'
+    post 'login', to: 'devise/sessions#create'
+    delete 'logout', to: 'devise/sessions#destroy', as: 'logout'
+  end
   
   # User routes
   resources :users, only: [:show, :edit, :update]
