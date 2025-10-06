@@ -61,13 +61,6 @@ services:
       db:
         condition: service_healthy
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1G
-          cpus: '0.5'
-        reservations:
-          memory: 512M
     stop_grace_period: 30s
     stop_signal: SIGTERM
     healthcheck:
