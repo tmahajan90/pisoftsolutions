@@ -1,12 +1,30 @@
-# Database service removed - using external PostgreSQL database
-# To use external database, set these environment variables:
-# POSTGRES_HOST=localhost (or your external DB host)
-# POSTGRES_PORT=5432
-# POSTGRES_DB=pisoftsolutions_production
-# POSTGRES_USER=your_db_user
-# POSTGRES_PASSWORD=your_db_password
-
 services:
+  # PostgreSQL Database with persistent data
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_production}
+      POSTGRES_USER: ${POSTGRES_USER:-pisoftsolutions_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pisoftsolutions_user} -d ${POSTGRES_DB:-pisoftsolutions_production}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - my_network
   web:
     build: .
     command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails tailwindcss:build && bundle exec rails s -p 3000 -b '0.0.0.0' -e ${RAILS_ENV:-production}"
@@ -16,15 +34,18 @@ services:
       - node_modules_cache:/app/node_modules
     ports:
       - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       RAILS_ENV: ${RAILS_ENV:-production}
       RAILS_SERVE_STATIC_FILES: "true"
       RAILS_LOG_TO_STDOUT: "true"
-      # External Database Configuration
-      POSTGRES_HOST: ${POSTGRES_HOST:-localhost}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      # Internal Database Configuration
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
       POSTGRES_USER: ${POSTGRES_USER:-pisoftsolutions_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_production}
       # Application Configuration
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
@@ -119,6 +140,8 @@ networks:
     driver: bridge
 
 volumes:
+  postgres_data:
+    driver: local
   bundle_cache:
     driver: local
   node_modules_cache:
