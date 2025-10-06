@@ -1,89 +1,14 @@
-services:
-  db:
-    image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_${RAILS_ENV:-development}}
-      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-pisoftsolutions_development}"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-          cpus: '0.25'
-      restart_policy:
-        condition: on-failure
-        max_attempts: 5
-        delay: 10s
-    stop_grace_period: 30s
-    stop_signal: SIGTERM
-    command: >
-      postgres
-      -c shared_preload_libraries=pg_stat_statements
-      -c pg_stat_statements.track=all
-      -c max_connections=100
-      -c shared_buffers=256MB
-      -c effective_cache_size=1GB
-      -c maintenance_work_mem=128MB
-      -c checkpoint_completion_target=0.9
-      -c wal_buffers=64MB
-      -c default_statistics_target=100
-      -c random_page_cost=1.1
-      -c effective_io_concurrency=200
-      -c work_mem=8MB
-      -c min_wal_size=1GB
-      -c max_wal_size=4GB
-      -c log_min_duration_statement=1000
-      -c log_checkpoints=on
-      -c log_connections=on
-      -c log_disconnections=on
-      -c log_lock_waits=on
-      -c log_temp_files=0
-      -c log_autovacuum_min_duration=0
-      -c log_line_prefix='%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
-      -c tcp_keepalives_idle=600
-      -c tcp_keepalives_interval=30
-      -c tcp_keepalives_count=3
-      -c idle_in_transaction_session_timeout=300000
-      -c statement_timeout=30000
-      -c lock_timeout=10000
-      -c deadlock_timeout=1s
-      -c log_statement=none
-      -c log_duration=off
-      -c log_lock_waits=on
-      -c log_temp_files=0
-      -c autovacuum=on
-      -c autovacuum_max_workers=3
-      -c autovacuum_naptime=20s
-      -c autovacuum_vacuum_threshold=50
-      -c autovacuum_analyze_threshold=50
-      -c autovacuum_vacuum_scale_factor=0.1
-      -c autovacuum_analyze_scale_factor=0.05
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    networks:
-      - my_network
+# Database service removed - using external PostgreSQL database
+# To use external database, set these environment variables:
+# POSTGRES_HOST=localhost (or your external DB host)
+# POSTGRES_PORT=5432
+# POSTGRES_DB=pisoftsolutions_production
+# POSTGRES_USER=your_db_user
+# POSTGRES_PASSWORD=your_db_password
 
   web:
     build: .
-    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails tailwindcss:build && bundle exec rails s -p 3000 -b '0.0.0.0' -e ${RAILS_ENV:-development}"
+    command: sh -c "rm -f tmp/pids/server.pid && bundle exec rails tailwindcss:build && bundle exec rails s -p 3000 -b '0.0.0.0' -e ${RAILS_ENV:-production}"
     volumes:
       - .:/app
       - bundle_cache:/usr/local/bundle
@@ -91,14 +16,16 @@ services:
     ports:
       - "3000:3000"
     environment:
-      RAILS_ENV: ${RAILS_ENV:-development}
+      RAILS_ENV: ${RAILS_ENV:-production}
       RAILS_SERVE_STATIC_FILES: "true"
       RAILS_LOG_TO_STDOUT: "true"
-      POSTGRES_HOST: db
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
-      POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_${RAILS_ENV:-development}}
+      # External Database Configuration
+      POSTGRES_HOST: ${POSTGRES_HOST:-localhost}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_USER: ${POSTGRES_USER:-pisoftsolutions_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-pisoftsolutions_production}
+      # Application Configuration
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
@@ -109,8 +36,8 @@ services:
       CASHFREE_WEBHOOK_SECRET: ${CASHFREE_WEBHOOK_SECRET}
       DEFAULT_PAYMENT_GATEWAY: ${DEFAULT_PAYMENT_GATEWAY:-cashfree}
       FORCE_SSL: ${FORCE_SSL:-false}
-      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-2}
-      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-1}
+      RAILS_MAX_THREADS: ${RAILS_MAX_THREADS:-5}
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-2}
       # Email Configuration
       SMTP_ADDRESS: ${SMTP_ADDRESS}
       SMTP_PORT: ${SMTP_PORT}
@@ -119,20 +46,19 @@ services:
       DOMAIN: ${DOMAIN}
       ADDITIONAL_DOMAINS: ${ADDITIONAL_DOMAINS}
       SUPPORT_EMAIL: ${SUPPORT_EMAIL}
-    depends_on:
-      db:
-        condition: service_healthy
     restart: always
     deploy:
       resources:
         limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
           memory: 1G
           cpus: '0.5'
-        reservations:
-          memory: 512M
       restart_policy:
         condition: on-failure
         max_attempts: 5
+        delay: 10s
     stop_grace_period: 30s
     stop_signal: SIGTERM
     healthcheck:
@@ -192,8 +118,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data:
-    driver: local
   bundle_cache:
     driver: local
   node_modules_cache:
