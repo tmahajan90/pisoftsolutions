@@ -20,31 +20,33 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
-          cpus: '0.5'
+          memory: 2G
+          cpus: '1.0'
         reservations:
-          memory: 256M
+          memory: 512M
+          cpus: '0.25'
       restart_policy:
         condition: on-failure
         max_attempts: 5
+        delay: 10s
     stop_grace_period: 30s
     stop_signal: SIGTERM
     command: >
       postgres
       -c shared_preload_libraries=pg_stat_statements
       -c pg_stat_statements.track=all
-      -c max_connections=50
-      -c shared_buffers=128MB
-      -c effective_cache_size=256MB
-      -c maintenance_work_mem=64MB
+      -c max_connections=100
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+      -c maintenance_work_mem=128MB
       -c checkpoint_completion_target=0.9
-      -c wal_buffers=32MB
+      -c wal_buffers=64MB
       -c default_statistics_target=100
       -c random_page_cost=1.1
       -c effective_io_concurrency=200
-      -c work_mem=4MB
+      -c work_mem=8MB
       -c min_wal_size=1GB
-      -c max_wal_size=2GB
+      -c max_wal_size=4GB
       -c log_min_duration_statement=1000
       -c log_checkpoints=on
       -c log_connections=on
@@ -53,6 +55,24 @@ services:
       -c log_temp_files=0
       -c log_autovacuum_min_duration=0
       -c log_line_prefix='%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+      -c tcp_keepalives_idle=600
+      -c tcp_keepalives_interval=30
+      -c tcp_keepalives_count=3
+      -c idle_in_transaction_session_timeout=300000
+      -c statement_timeout=30000
+      -c lock_timeout=10000
+      -c deadlock_timeout=1s
+      -c log_statement=none
+      -c log_duration=off
+      -c log_lock_waits=on
+      -c log_temp_files=0
+      -c autovacuum=on
+      -c autovacuum_max_workers=3
+      -c autovacuum_naptime=20s
+      -c autovacuum_vacuum_threshold=50
+      -c autovacuum_analyze_threshold=50
+      -c autovacuum_vacuum_scale_factor=0.1
+      -c autovacuum_analyze_scale_factor=0.05
     logging:
       driver: "json-file"
       options:

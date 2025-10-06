@@ -65,3 +65,18 @@ production:
   password: <%= ENV.fetch("POSTGRES_PASSWORD") { "password" } %>
   host: <%= ENV.fetch("POSTGRES_HOST") { "localhost" } %>
   port: <%= ENV.fetch("POSTGRES_PORT") { 5432 } %>
+  # Connection pool settings for production stability
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  timeout: 5000
+  connect_timeout: 10
+  checkout_timeout: 5
+  reaping_frequency: 10
+  idle_timeout: 300
+  # Connection retry settings
+  retry_on_connection_failure: true
+  retry_count: 3
+  retry_delay: 1
+  # Connection validation
+  verify_connection: true
+  # Statement timeout (30 seconds)
+  statement_timeout: 30000
